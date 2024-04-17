@@ -22,17 +22,40 @@ import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
 
+// import * as React from 'react';
+import dayjs, { Dayjs } from 'dayjs';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import Snackbar from "@mui/material/Snackbar";
+import { useState } from 'react';
+
 const schema = zod.object({
   firstName: zod.string().min(1, { message: 'First name is required' }),
   lastName: zod.string().min(1, { message: 'Last name is required' }),
+  userName: zod.string().min(1, { message: 'Last name is required' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
+  // birthDate: zod.date().min(new Date(1900, 0, 1), { message: 'Invalid birth date' }),
   password: zod.string().min(6, { message: 'Password should be at least 6 characters' }),
   terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
+  phoneNumber: zod.string()
+  .min(1, { message: 'Phone number is required' })
+  .regex(/^\d+$/, { message: 'Phone number must contain only digits' }),
 });
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { firstName: '', lastName: '', email: '', password: '', terms: false } satisfies Values;
+const defaultValues = { 
+  firstName: '', 
+  lastName: '', 
+  userName: '', 
+  email: '', 
+  // birthDate: '', 
+  phoneNumber: '', 
+  password: '', 
+  terms: false 
+} satisfies Values;
 
 export function SignUpForm(): React.JSX.Element {
   const router = useRouter();
@@ -40,6 +63,24 @@ export function SignUpForm(): React.JSX.Element {
   const { checkSession } = useUser();
 
   const [isPending, setIsPending] = React.useState<boolean>(false);
+  const [value, setValue] = React.useState<Dayjs | null>(dayjs('2024-10-10'));
+  const [snackbar, setSnackbar] = useState(null);
+  const [open, setOpen] = useState(false);
+
+  const handleClick = () => {
+    setTimeout(() => {
+      setOpen(true);
+    }, 2000);
+    // setOpen(true);
+  };
+
+  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
 
   const {
     control,
@@ -52,6 +93,11 @@ export function SignUpForm(): React.JSX.Element {
     async (values: Values): Promise<void> => {
       setIsPending(true);
 
+      setTimeout(() => {
+        handleClick()
+      }, 2000);
+      console.log('values', values)
+
       const { error } = await authClient.signUp(values);
 
       if (error) {
@@ -60,19 +106,17 @@ export function SignUpForm(): React.JSX.Element {
         return;
       }
 
-      // Refresh the auth state
       await checkSession?.();
-
-      // UserProvider, for this case, will not refresh the router
-      // After refresh, GuestGuard will handle the redirect
+      
       router.refresh();
+      router.push(paths.dashboard.customers);
     },
     [checkSession, router, setError]
   );
 
   return (
     <Stack spacing={3}>
-      <Stack spacing={1}>
+      <Stack spacing={2}>
         <Typography variant="h4">Sign up</Typography>
         <Typography color="text.secondary" variant="body2">
           Already have an account?{' '}
@@ -81,6 +125,7 @@ export function SignUpForm(): React.JSX.Element {
           </Link>
         </Typography>
       </Stack>
+
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
           <Controller
@@ -94,6 +139,7 @@ export function SignUpForm(): React.JSX.Element {
               </FormControl>
             )}
           />
+          
           <Controller
             control={control}
             name="lastName"
@@ -105,6 +151,19 @@ export function SignUpForm(): React.JSX.Element {
               </FormControl>
             )}
           />
+
+          <Controller
+            control={control}
+            name="userName"
+            render={({ field }) => (
+              <FormControl error={Boolean(errors.userName)}>
+                <InputLabel>User name</InputLabel>
+                <OutlinedInput {...field} label="Last name" />
+                {errors.userName ? <FormHelperText>{errors.userName.message}</FormHelperText> : null}
+              </FormControl>
+            )}
+          />
+
           <Controller
             control={control}
             name="email"
@@ -116,6 +175,41 @@ export function SignUpForm(): React.JSX.Element {
               </FormControl>
             )}
           />
+
+          <Controller
+            control={control}
+            name="phoneNumber"
+            render={({ field }) => (
+              <FormControl error={Boolean(errors.phoneNumber)}>
+                <InputLabel>Phone number</InputLabel>
+                <OutlinedInput {...field} label="Phone number" type="tel" />
+                {errors.phoneNumber ? <FormHelperText>{errors.phoneNumber.message}</FormHelperText> : null}
+              </FormControl>
+            )}
+          />
+
+          {/* <Controller
+            control={control}
+            name="phoneNumber"
+            render={({ field }) => (
+              <FormControl error={Boolean(errors.phoneNumber)}>
+                <InputLabel>phoneNumber</InputLabel>
+                <OutlinedInput {...field} label="Password" type="tel" />
+                {errors.phoneNumber ? <FormHelperText>{errors.phoneNumber.message}</FormHelperText> : null}
+              </FormControl>
+            )}
+          /> */}
+
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
+              <DateTimePicker
+                label="Phone number"
+                value={value}
+                onChange={(newValue) => setValue(newValue)}
+              />
+            </DemoContainer>
+          </LocalizationProvider>
+
           <Controller
             control={control}
             name="password"
@@ -127,6 +221,7 @@ export function SignUpForm(): React.JSX.Element {
               </FormControl>
             )}
           />
+
           <Controller
             control={control}
             name="terms"
@@ -150,7 +245,18 @@ export function SignUpForm(): React.JSX.Element {
           </Button>
         </Stack>
       </form>
-      <Alert color="warning">Created users are not persisted</Alert>
+      {/* <Alert color="warning">Created users are not persisted</Alert> */}
+
+      <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
+        <Alert
+          onClose={handleClose}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%'}}
+        >
+          New user registered successfully!
+        </Alert>
+      </Snackbar>
     </Stack>
   );
 }

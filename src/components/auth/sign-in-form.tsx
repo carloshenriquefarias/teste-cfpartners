@@ -17,6 +17,8 @@ import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 import { EyeSlash as EyeSlashIcon } from '@phosphor-icons/react/dist/ssr/EyeSlash';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
@@ -71,17 +73,13 @@ export function SignInForm(): React.JSX.Element {
 
   return (
     <Stack spacing={4}>
+
       <Stack spacing={1}>
-        <Typography variant="h4">Sign in</Typography>
-        <Typography color="text.secondary" variant="body2">
-          Don&apos;t have an account?{' '}
-          <Link component={RouterLink} href={paths.auth.signUp} underline="hover" variant="subtitle2">
-            Sign up
-          </Link>
-        </Typography>
+        <Typography variant="h4">Sign in</Typography>      
       </Stack>
+
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack spacing={2}>
+        <Stack spacing={4}>
           <Controller
             control={control}
             name="email"
@@ -93,6 +91,7 @@ export function SignInForm(): React.JSX.Element {
               </FormControl>
             )}
           />
+
           <Controller
             control={control}
             name="password"
@@ -127,18 +126,30 @@ export function SignInForm(): React.JSX.Element {
               </FormControl>
             )}
           />
-          <div>
-            <Link component={RouterLink} href={paths.auth.resetPassword} variant="subtitle2">
-              Forgot password?
-            </Link>
-          </div>
+          
           {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
           <Button disabled={isPending} type="submit" variant="contained">
             Sign in
           </Button>
         </Stack>
       </form>
-      <Alert color="warning">
+
+      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography color="text.secondary" variant="body2" mt={0}>
+          Don&apos;t have an account?{' '}
+          <Link component={RouterLink} href={paths.auth.signUp} underline="hover" variant="subtitle2">
+            Sign up
+          </Link>
+        </Typography>
+
+        <div>
+          <Link component={RouterLink} href={paths.auth.resetPassword} variant="subtitle2">
+            Forgot password?
+          </Link>
+        </div>
+      </Stack>
+      
+      {/* <Alert color="warning">
         Use{' '}
         <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
           sofia@devias.io
@@ -147,7 +158,7 @@ export function SignInForm(): React.JSX.Element {
         <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
           Secret1
         </Typography>
-      </Alert>
+      </Alert> */}
     </Stack>
   );
 }
