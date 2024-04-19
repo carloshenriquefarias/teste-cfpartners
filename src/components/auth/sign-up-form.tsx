@@ -89,7 +89,8 @@ export function SignUpForm(): React.JSX.Element {
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
+  } = useForm<Values>({ defaultValues, 
+    resolver: zodResolver(schema) });
 
   const onSubmit = React.useCallback(
     async (values: Values): Promise<void> => {
@@ -158,7 +159,10 @@ export function SignUpForm(): React.JSX.Element {
               <FormControl error={Boolean(errors.firstName)}>
                 <InputLabel>First name</InputLabel>
                 <OutlinedInput {...field} label="First name" />
-                {errors.firstName ? <FormHelperText>{errors.firstName.message}</FormHelperText> : null}
+                {errors.firstName ?
+                  <FormHelperText>
+                  {errors.firstName.message}
+                  </FormHelperText> : null}
               </FormControl>
             )}
           />
