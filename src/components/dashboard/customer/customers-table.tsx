@@ -23,11 +23,32 @@ import { PencilLine } from '@phosphor-icons/react/dist/ssr/PencilLine';
 import { useSelection } from '@/hooks/use-selection';
 import { paths } from '@/paths';
 import Modal from './modal';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { api } from '@/services/api';
+import Snackbar from "@mui/material/Snackbar";
+import Alert from '@mui/material/Alert';
+
+import { toastApiResponse } from '@/utils/Toast';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/ReactToastify.min.css";  
 
 function noop(): void {
   // do nothing
+}
+
+export interface Users {
+  id: string;
+  firstname: string;
+  lastname: string;
+  username: string;
+  email: string;
+  mobile: string;
+  // birthDate: Date;
+  password: string;
+  // avatar: string;
+  // address: { city: string; state: string; country: string; street: string };
+  // createdAt: Date;
 }
 
 export interface Customer {
@@ -69,17 +90,19 @@ export function CustomersTable({
   const [open, setOpen] = React.useState(false);
   const [allUser, setAllUsers] = useState(rows);
   const [userIdToDelete, setUserIdToDelete] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [users, setUsers] = useState<Users[]>([]);
+  const [rechargeListUsers, setRechargeListUsers] = useState(false);
   const router = useRouter();
 
   const handleOpenModal = (userId: any) => {
-    console.log('o ID do user e', userId);
     setSelectedUserId(userId);
     setOpen(true);
   };
 
   const handleClickEditUser = (userId: string) => {
-    router.push(`/dashboard/account/${userId}`);
+    router.push(`/dashboard/customers/${userId}`);
   };
 
   const handleCloseModal = () => {
@@ -87,19 +110,53 @@ export function CustomersTable({
     setSelectedUserId(null);
   };
 
-  const handleDeleteUser = () => {
-    if (selectedUserId) {
-
-      const updatedCustomers = rows.filter((customer) => customer.id !== selectedUserId);
-      console.log('Usuário deletado:', selectedUserId);
-      console.log('Lista atualizada de usuários:', updatedCustomers);
-
-      // Atualizar a lista de customers (exemplo: usando setState, se for um componente React)
-      // setCustomers(updatedCustomers);
-
-      handleCloseModal();
+  const fetchAllUsers = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.post('/crud_users/api/v2/users');
+      const newsResponse = response.data;
+      setUsers(newsResponse?.data) 
+      setIsLoading(false);
+  
+    } catch (error) {
+      console.error('Error:', error);
+      toastApiResponse(error, 'It is not possible to load users details');
     }
   };
+
+  const handleDeleteUser = async () => {
+
+    if (selectedUserId) {
+
+      try {  
+        const formData = new FormData();
+        formData.append("id", selectedUserId);
+  
+        const deleteUserEndpoint = '/crud_users/api/v2/user/delete';  
+  
+        const response = await api.post(deleteUserEndpoint, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+  
+        if (response.data.status) {
+          toastApiResponse(response, response.data.message);
+        }
+
+        setRechargeListUsers(true);
+        handleCloseModal();
+  
+      } catch (error) {
+        toastApiResponse(null, 'It is not possible to delete this user');
+      }
+    }
+  };  
+  
+  useEffect(() => {
+    fetchAllUsers();
+    setRechargeListUsers(false);
+  }, [rechargeListUsers]);
 
   return (
     <Card>
@@ -113,14 +170,9 @@ export function CustomersTable({
               <TableCell>Email</TableCell>
               <TableCell>Phone number</TableCell>
               <TableCell>Birth date</TableCell>
-              {/* <TableCell>Signed Up</TableCell> */}
               <TableCell>Update data</TableCell>
               <TableCell>Delete account</TableCell>
-              {/* <TableCell padding="checkbox">
-                <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained">
-                  Register new user
-                </Button>
-              </TableCell> */}
+
               {/* <TableCell padding="checkbox">
                 <Checkbox
                   checked={selectedAll}
@@ -138,64 +190,52 @@ export function CustomersTable({
           </TableHead>
 
           <TableBody>
-            {rows.map((row) => {
-              const isSelected = selected?.has(row.id);
-
-              return (
-                <TableRow hover key={row.id} selected={isSelected}>
-                  
+            {users.length > 0 && users.map((user, index) => (
+                <TableRow hover key={index}>                  
                   <TableCell>
                     <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                      {/* <Avatar src={row.avatar} /> */}
-                      <Typography variant="subtitle2">{row.firstName}</Typography>
+                      <Typography variant="subtitle2">{user.firstname}</Typography>
                     </Stack>
                   </TableCell>
-                  <TableCell>{row.lastName}</TableCell>
-                  <TableCell>{row.userName}</TableCell>
-                 
-                  <TableCell>{row.email}</TableCell>
-                  {/* <TableCell>
-                    {row.address.city}, {row.address.state}, {row.address.country}
-                  </TableCell> */}
-                  <TableCell>{row.phone}</TableCell>
-                   <TableCell>{dayjs(row.birthDate).format('MMM D, YYYY')}</TableCell>
-                  {/* <TableCell>{dayjs(row.createdAt).format('MMM D, YYYY')}</TableCell> */}
+
+                  <TableCell>{user.lastname}</TableCell>
+                  <TableCell>{user.username}</TableCell>                 
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.mobile}</TableCell>
+                  <TableCell>{'10/10/2024'}</TableCell>
+                  {/* <TableCell>{dayjs(user.birthDate).format('MMM D, YYYY')}</TableCell> */}
+
                   <TableCell>
                     <Button 
                       startIcon={<PencilLine fontSize="var(--icon-fontSize-md)" />} 
                       variant="contained" 
                       // href={paths.dashboard.account}
-                      onClick={() => handleClickEditUser(row.id)}
-                      sx={{ backgroundColor: '#5fff9e', color: 'gray', '&:hover': { backgroundColor: '#00a340', color: 'white', } }}
+                      onClick={() => handleClickEditUser(user.id)}
+                      sx={{ 
+                        backgroundColor: '#b0c4de', 
+                        color: 'white', 
+                        '&:hover': { 
+                          backgroundColor: '#385985', 
+                          color: 'white', 
+                        } 
+                      }}
                     >
                       Edit
                     </Button>
                   </TableCell>
+
                   <TableCell>
                     <Button 
                       startIcon={<Trash fontSize="var(--icon-fontSize-md)" />} 
                       variant="contained"  
-                      onClick={() => handleOpenModal(row.id)}                    
+                      onClick={() => handleOpenModal(user.id)}                    
                       sx={{ backgroundColor: '#ff6961', color: 'white', '&:hover': { backgroundColor: 'darkred' } }}
                     >
                       Delete
                     </Button>
                   </TableCell>
-                  {/* <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell> */}
                 </TableRow>
-              );
-            })}
+            ))}
           </TableBody>
         </Table>
       </Box>
@@ -217,6 +257,8 @@ export function CustomersTable({
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
       />
+
+      <ToastContainer />
     </Card>
   );
 }

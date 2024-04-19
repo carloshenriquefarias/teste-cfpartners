@@ -166,7 +166,10 @@ export default function Page(): React.JSX.Element {
         </Stack>
 
         <div>
-          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" href={paths.dashboard.settings}>
+          <Button 
+            startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} 
+            variant="contained" href={paths.dashboard.settings}
+          >
             Register new user
           </Button>
         </div>

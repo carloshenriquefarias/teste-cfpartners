@@ -25,36 +25,6 @@ export default function Modal({ open, handleClose, handleDeleteUserById } : any)
     setOpenSnack(false);
   };
 
-  // const handleDeleteUserById = () => {
-  //   try {
-  //     // handleClickSnack();
-
-  //     setTimeout(() => {
-  //       handleClickSnack()
-  //     }, 2000);
-
-  //     // Chamada assíncrona para deletar o usuário pelo ID
-  //     // await deleteUserById(userId);
-
-  //     // Se a deleção for bem-sucedida, você pode exibir outra mensagem de snack ou notificação
-  //     // handleCloseSnack(); // Fechar o snack após a deleção (opcional)
-
-  //     // Você pode adicionar aqui qualquer lógica adicional após a deleção bem-sucedida
-  //   } catch (error) {
-  //     // Se ocorrer algum erro durante a deleção, o código cairá aqui
-  //     console.error('Erro ao deletar usuário:', error);
-
-  //     // Aqui você pode adicionar lógica para lidar com o erro, como exibir uma mensagem de erro
-  //     // handleCloseSnack(); // Fechar o snack em caso de erro (opcional)
-
-  //     // Por exemplo, você pode usar o setError para exibir um erro no formulário ou em outro componente
-  //     // setError('root', { type: 'server', message: 'Erro ao deletar usuário.' });
-  //   }
-    
-  //   // handleCloseSnack();
-  //   handleClose();
-  // };
-
   return (
     <React.Fragment>
       <Dialog

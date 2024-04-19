@@ -21,6 +21,7 @@ import { z as zod } from 'zod';
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
+import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 
 // import * as React from 'react';
 import dayjs, { Dayjs } from 'dayjs';
@@ -30,6 +31,21 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import Snackbar from "@mui/material/Snackbar";
 import { useState } from 'react';
+import { api } from '@/services/api';
+
+import { toastApiResponse } from '@/utils/Toast';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/ReactToastify.min.css";  
+
+interface FormDataUser {
+  firstName: string;
+  lastName: string;
+  userName?: string; // Campo opcional
+  email: string;
+  phoneNumber: string;
+  password: string;
+  // terms?: boolean; // Campo opcional (comentado conforme o exemplo original)
+}
 
 const schema = zod.object({
   firstName: zod.string().min(1, { message: 'First name is required' }),
@@ -38,7 +54,7 @@ const schema = zod.object({
   email: zod.string().min(1, { message: 'Email is required' }).email(),
   // birthDate: zod.date().min(new Date(1900, 0, 1), { message: 'Invalid birth date' }),
   password: zod.string().min(6, { message: 'Password should be at least 6 characters' }),
-  terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
+  // terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
   phoneNumber: zod.string()
   .min(1, { message: 'Phone number is required' })
   .regex(/^\d+$/, { message: 'Phone number must contain only digits' }),
@@ -54,7 +70,7 @@ const defaultValues = {
   // birthDate: '', 
   phoneNumber: '', 
   password: '', 
-  terms: false 
+  // terms: false 
 } satisfies Values;
 
 export function SignUpForm(): React.JSX.Element {
@@ -64,23 +80,9 @@ export function SignUpForm(): React.JSX.Element {
 
   const [isPending, setIsPending] = React.useState<boolean>(false);
   const [value, setValue] = React.useState<Dayjs | null>(dayjs('2024-10-10'));
-  const [snackbar, setSnackbar] = useState(null);
-  const [open, setOpen] = useState(false);
-
-  const handleClick = () => {
-    setTimeout(() => {
-      setOpen(true);
-    }, 2000);
-    // setOpen(true);
-  };
-
-  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
-    setOpen(false);
-  };
+  // const [snackbar, setSnackbar] = useState(null);
+  // const [open, setOpen] = useState(false);
+  // const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const {
     control,
@@ -93,10 +95,26 @@ export function SignUpForm(): React.JSX.Element {
     async (values: Values): Promise<void> => {
       setIsPending(true);
 
-      setTimeout(() => {
-        handleClick()
-      }, 2000);
-      console.log('values', values)
+      const formData = new FormData();
+      formData.append("firstname", values.firstName);
+      formData.append("lastname", values.lastName);
+      formData.append("email", values.email);
+      formData.append("mobile", values.phoneNumber);
+      formData.append("username", values.userName);
+      formData.append("password", values.password);
+
+      const registerNewUserEndpoint = '/crud_users/api/v2/user/create';  
+      const response = await api.post(registerNewUserEndpoint, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.status) {
+        toastApiResponse(response, response.data.message);
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       const { error } = await authClient.signUp(values);
 
@@ -108,7 +126,7 @@ export function SignUpForm(): React.JSX.Element {
 
       await checkSession?.();
       
-      router.refresh();
+      // router.refresh();
       router.push(paths.dashboard.customers);
     },
     [checkSession, router, setError]
@@ -117,13 +135,18 @@ export function SignUpForm(): React.JSX.Element {
   return (
     <Stack spacing={3}>
       <Stack spacing={2}>
-        <Typography variant="h4">Sign up</Typography>
-        <Typography color="text.secondary" variant="body2">
+        <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+          <UsersIcon size={32}/>
+          <Typography variant="h5">Register a new user</Typography>
+        </Stack>
+
+        {/* <Typography variant="h5">Sign up</Typography> */}
+        {/* <Typography color="text.secondary" variant="body2">
           Already have an account?{' '}
           <Link component={RouterLink} href={paths.auth.signIn} underline="hover" variant="subtitle2">
             Sign in
           </Link>
-        </Typography>
+        </Typography> */}
       </Stack>
 
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -188,18 +211,6 @@ export function SignUpForm(): React.JSX.Element {
             )}
           />
 
-          {/* <Controller
-            control={control}
-            name="phoneNumber"
-            render={({ field }) => (
-              <FormControl error={Boolean(errors.phoneNumber)}>
-                <InputLabel>phoneNumber</InputLabel>
-                <OutlinedInput {...field} label="Password" type="tel" />
-                {errors.phoneNumber ? <FormHelperText>{errors.phoneNumber.message}</FormHelperText> : null}
-              </FormControl>
-            )}
-          /> */}
-
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
               <DateTimePicker
@@ -222,7 +233,7 @@ export function SignUpForm(): React.JSX.Element {
             )}
           />
 
-          <Controller
+          {/* <Controller
             control={control}
             name="terms"
             render={({ field }) => (
@@ -238,25 +249,20 @@ export function SignUpForm(): React.JSX.Element {
                 {errors.terms ? <FormHelperText error>{errors.terms.message}</FormHelperText> : null}
               </div>
             )}
-          />
+          /> */}
+
           {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
+
           <Button disabled={isPending} type="submit" variant="contained">
             Sign up
           </Button>
         </Stack>
       </form>
+
+      <ToastContainer />
+
       {/* <Alert color="warning">Created users are not persisted</Alert> */}
 
-      <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
-        <Alert
-          onClose={handleClose}
-          severity="success"
-          variant="filled"
-          sx={{ width: '100%'}}
-        >
-          New user registered successfully!
-        </Alert>
-      </Snackbar>
     </Stack>
   );
 }
