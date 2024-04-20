@@ -170,22 +170,7 @@ export function CustomersTable({
               <TableCell>Email</TableCell>
               <TableCell>Phone number</TableCell>
               <TableCell>Birth date</TableCell>
-              <TableCell>Update data</TableCell>
-              <TableCell>Delete account</TableCell>
-
-              {/* <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell> */}
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
 
@@ -206,33 +191,32 @@ export function CustomersTable({
                   {/* <TableCell>{dayjs(user.birthDate).format('MMM D, YYYY')}</TableCell> */}
 
                   <TableCell>
-                    <Button 
-                      startIcon={<PencilLine fontSize="var(--icon-fontSize-md)" />} 
-                      variant="contained" 
-                      // href={paths.dashboard.account}
-                      onClick={() => handleClickEditUser(user.id)}
-                      sx={{ 
-                        backgroundColor: '#b0c4de', 
-                        color: 'white', 
-                        '&:hover': { 
-                          backgroundColor: '#385985', 
+                    <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
+                      <Button 
+                        startIcon={<PencilLine fontSize="var(--icon-fontSize-md)" />} 
+                        variant="contained" 
+                        onClick={() => handleClickEditUser(user.id)}
+                        sx={{ 
+                          backgroundColor: '#00aaff', 
                           color: 'white', 
-                        } 
-                      }}
-                    >
-                      Edit
-                    </Button>
-                  </TableCell>
+                          '&:hover': { 
+                            backgroundColor: '#1481b8', 
+                            color: 'white', 
+                          } 
+                        }}
+                      >
+                        Edit
+                      </Button>
 
-                  <TableCell>
-                    <Button 
-                      startIcon={<Trash fontSize="var(--icon-fontSize-md)" />} 
-                      variant="contained"  
-                      onClick={() => handleOpenModal(user.id)}                    
-                      sx={{ backgroundColor: '#ff6961', color: 'white', '&:hover': { backgroundColor: 'darkred' } }}
-                    >
-                      Delete
-                    </Button>
+                      <Button 
+                        startIcon={<Trash fontSize="var(--icon-fontSize-md)" />} 
+                        variant="contained"  
+                        onClick={() => handleOpenModal(user.id)}                    
+                        sx={{ backgroundColor: '#ff6961', color: 'white', '&:hover': { backgroundColor: 'darkred' } }}
+                      >
+                        Delete
+                      </Button>                      
+                    </Stack>                    
                   </TableCell>
                 </TableRow>
             ))}
@@ -248,7 +232,7 @@ export function CustomersTable({
 
       <Divider />
 
-      <TablePagination
+      {/* <TablePagination
         component="div"
         count={count}
         onPageChange={noop}
@@ -256,7 +240,7 @@ export function CustomersTable({
         page={page}
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
-      />
+      /> */}
 
       <ToastContainer />
     </Card>

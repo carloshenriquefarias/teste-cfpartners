@@ -58,9 +58,12 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
       open={open}
     >
       <Stack spacing={2} sx={{ p: 3 }}>
-        <Box component={RouterLink} href={paths.home} sx={{ display: 'inline-flex' }}>
-          <Logo color="light" height={32} width={122} />
-        </Box>
+        {/* <Box component={RouterLink} href={paths.home} sx={{ display: 'inline-flex' }} flexDirection={'column'}>
+          <Logo color="light" height={200} width={270} />
+          <Typography color="white" variant="subtitle1">
+            Brook Green Suplly
+          </Typography>
+        </Box> */}
         <Box
           sx={{
             alignItems: 'center',
@@ -74,10 +77,10 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
         >
           <Box sx={{ flex: '1 1 auto' }}>
             <Typography color="var(--mui-palette-neutral-400)" variant="body2">
-              Workspace
+              Brook Green Suplly
             </Typography>
             <Typography color="inherit" variant="subtitle1">
-              Devias
+              CF Partners
             </Typography>
           </Box>
           <CaretUpDownIcon />
@@ -88,7 +91,8 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
         {renderNavItems({ pathname, items: navItems })}
       </Box>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      <Stack spacing={2} sx={{ p: '12px' }}>
+
+      {/* <Stack spacing={2} sx={{ p: '12px' }}>
         <div>
           <Typography color="var(--mui-palette-neutral-100)" variant="subtitle2">
             Need more features?
@@ -116,7 +120,7 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
         >
           Pro version
         </Button>
-      </Stack>
+      </Stack> */}
     </Drawer>
   );
 }

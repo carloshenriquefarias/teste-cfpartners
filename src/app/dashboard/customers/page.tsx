@@ -152,8 +152,8 @@ export default function Page(): React.JSX.Element {
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-            <UsersIcon size={32}/>
-            <Typography variant="h5">All users registered</Typography>
+            {/* <UsersIcon size={32}/> */}
+            <Typography variant="h5">All users</Typography>
           </Stack>
           {/* <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Button color="inherit" startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}>
