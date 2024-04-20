@@ -18,10 +18,10 @@ export default function Page( {params} : {params : {id: string}}): React.JSX.Ele
   return (
     <Stack spacing={3}>
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-        <UsersIcon size={32}/>
-        <Typography variant="h4">Personal data of the user</Typography>
-        <Typography variant="h4">User</Typography>
-        <Typography variant="h4">user: {params.id}</Typography>
+        {/* <UsersIcon size={32}/> */}
+        <Typography variant="h4">Edit profile</Typography>
+        {/* <Typography variant="h4">User</Typography>
+        <Typography variant="h4">user: {params.id}</Typography> */}
       </Stack>
 
       <Grid container spacing={3}>

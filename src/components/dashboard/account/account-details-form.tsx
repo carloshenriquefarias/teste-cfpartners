@@ -39,6 +39,10 @@ import { Controller, useForm } from 'react-hook-form';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormUser from './formUser';
+import { Stack, Typography } from '@mui/material';
+import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
+import { UserCircle } from '@phosphor-icons/react';
+
 
 interface User {
   id: string;
@@ -97,20 +101,27 @@ export function AccountDetailsForm({ userId }: any): React.JSX.Element {
   }, [userId])
 
   return (
-    <Card>
-      <CardHeader subheader="Update your data" title="Edit profile"/>
-      <Divider />
+    <>
+      <Stack spacing={0} mb={3}>
+        <Card>
+          
+          <Stack direction="row" spacing={2} padding={3} sx={{ alignItems: 'center' }}>
+            <UserCircle size={75} color='gray'/>
+            {user && 
+              <Stack direction="column" spacing={0} sx={{ alignItems: 'flex-start' }}>
+                <Typography variant="h4" color={'gray'}>{user.username}</Typography>
+                <Typography fontSize={'16px'} color={'gray'}>{user.email}</Typography>
+              </Stack>
+            }
+          </Stack>
+        </Card>
+      </Stack>
 
-      <CardContent>
-        {user && 
-        <FormUser user={user}/>  
-        }
-      </CardContent>
-
-      <Divider />
-
-      <ToastContainer />
-
-    </Card>
+      <Card>
+        <CardContent>
+          {user && <FormUser user={user} />}
+        </CardContent>
+      </Card>
+    </>
   );
 }
