@@ -152,6 +152,21 @@ export function CustomersTable({
       }
     }
   };  
+
+  const formatPhoneNumber = (value: any) => {
+    const cleaned = value.replace(/\D/g, '');
+    let formattedValue = '';
+    if (cleaned.length > 0) {
+      formattedValue = `(${cleaned.slice(0, 3)})`;
+      if (cleaned.length > 3) {
+        formattedValue += ` ${cleaned.slice(3, 8)}`;
+        if (cleaned.length > 8) {
+          formattedValue += `-${cleaned.slice(8, 12)}`;
+        }
+      }
+    }
+    return formattedValue;
+  };
   
   useEffect(() => {
     fetchAllUsers();
@@ -186,8 +201,9 @@ export function CustomersTable({
                   <TableCell>{user.lastname}</TableCell>
                   <TableCell>{user.username}</TableCell>                 
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.mobile}</TableCell>
+                  <TableCell>{(formatPhoneNumber(user.mobile))}</TableCell>
                   <TableCell>{'10/10/2024'}</TableCell>
+                  
                   {/* <TableCell>{dayjs(user.birthDate).format('MMM D, YYYY')}</TableCell> */}
 
                   <TableCell>
