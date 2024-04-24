@@ -1,76 +1,87 @@
 'use client';
 
 import * as React from 'react';
-import RouterLink from 'next/link';
 import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
+
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
+import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
-import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
+
+import CardActions from '@mui/material/CardActions';
+import CardHeader from '@mui/material/CardHeader';
+import { Grid } from '@mui/material';
 
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
-import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 
-// import * as React from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import Snackbar from "@mui/material/Snackbar";
+
 import { useState } from 'react';
 import { api } from '@/services/api';
 
+import { toast } from 'react-toastify';
 import { toastApiResponse } from '@/utils/Toast';
 import { ToastContainer } from "react-toastify";
-import "react-toastify/ReactToastify.min.css";  
+import "react-toastify/ReactToastify.min.css";
+import 'react-toastify/dist/ReactToastify.css';
 
-interface FormDataUser {
-  firstName: string;
-  lastName: string;
-  userName?: string; // Campo opcional
-  email: string;
-  phoneNumber: string;
-  password: string;
-  // terms?: boolean; // Campo opcional (comentado conforme o exemplo original)
-}
+import { ArrowFatLineLeft, ClipboardText, IdentificationCard} from '@phosphor-icons/react';
+import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
+import { EyeSlash as EyeSlashIcon } from '@phosphor-icons/react/dist/ssr/EyeSlash';
+
+// interface FormDataUser {
+//   firstName: string;
+//   lastName: string;
+//   userName?: string;
+//   email: string;
+//   phoneNumber: string;
+//   password: string;
+// }
 
 const schema = zod.object({
-  firstName: zod.string().min(1, { message: 'First name is required' }),
-  lastName: zod.string().min(1, { message: 'Last name is required' }),
-  userName: zod.string().min(1, { message: 'Last name is required' }),
+  firstName: zod.string().min(1, { message: 'Firstname is required' }),
+  lastName: zod.string().min(1, { message: 'Lastname is required' }),
+  userName: zod.string().min(1, { message: 'Username is required' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
   // birthDate: zod.date().min(new Date(1900, 0, 1), { message: 'Invalid birth date' }),
+  // birthDate: zod.string().refine((value) => {
+  //   const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+  //   return dateRegex.test(value);
+  // }, { message: 'Invalid birth date. Please use the format DD/MM/YYYY' }),
+  
+  mobile: zod.string()
+    .min(1, { message: 'Mobile is required' })
+    .regex(/^\d+$/, { message: 'Mobile must contain only digits' }),
   password: zod.string().min(6, { message: 'Password should be at least 6 characters' }),
-  // terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
-  phoneNumber: zod.string()
-  .min(1, { message: 'Phone number is required' })
-  .regex(/^\d+$/, { message: 'Phone number must contain only digits' }),
+  confirmPassword: zod.string().min(6, { message: 'Confirm password should be the same password' }),
 });
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { 
-  firstName: '', 
-  lastName: '', 
-  userName: '', 
-  email: '', 
+const defaultValues = {
+  firstName: '',
+  lastName: '',
+  userName: '',
+  email: '',
   // birthDate: '', 
-  phoneNumber: '', 
-  password: '', 
-  // terms: false 
+  mobile: '',
+  password: '',
+  confirmPassword: '',
 } satisfies Values;
 
 export function SignUpForm(): React.JSX.Element {
@@ -79,76 +90,133 @@ export function SignUpForm(): React.JSX.Element {
   const { checkSession } = useUser();
 
   const [isPending, setIsPending] = React.useState<boolean>(false);
-  const [value, setValue] = React.useState<Dayjs | null>(dayjs('2024-10-10'));
-  // const [snackbar, setSnackbar] = useState(null);
-  // const [open, setOpen] = useState(false);
-  // const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [showPassword, setShowPassword] = React.useState<boolean>();
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState<boolean>();
+  const [isLoading, setIsLoading] = useState(false);
+  // const [value, setValue] = React.useState<Dayjs | null>(dayjs('2024-10-10'));
 
-  const {
-    control,
-    handleSubmit,
-    setError,
-    formState: { errors },
-  } = useForm<Values>({ defaultValues, 
-    resolver: zodResolver(schema) });
+  const handleApiError = () => {
+    const title = 'Your password is incorrect. Please try again';
+    toast.error(title, {
+      position: "top-center",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
+    });
+  };
+
+  const formatPhoneNumber = (value: any) => {
+    const cleaned = value.replace(/\D/g, '');
+    let formattedValue = '';
+    if (cleaned.length > 0) {
+      formattedValue = `(${cleaned.slice(0, 3)})`;
+      if (cleaned.length > 3) {
+        formattedValue += ` ${cleaned.slice(3, 8)}`;
+        if (cleaned.length > 8) {
+          formattedValue += `-${cleaned.slice(8, 12)}`;
+        }
+      }
+    }
+    return formattedValue;
+  };
+
+  const { control, handleSubmit, setError, formState: { errors } } = useForm<Values>({
+    defaultValues,
+    resolver: zodResolver(schema)
+  });
 
   const onSubmit = React.useCallback(
     async (values: Values): Promise<void> => {
-      setIsPending(true);
-
-      const formData = new FormData();
-      formData.append("firstname", values.firstName);
-      formData.append("lastname", values.lastName);
-      formData.append("email", values.email);
-      formData.append("mobile", values.phoneNumber);
-      formData.append("username", values.userName);
-      formData.append("password", values.password);
-
-      const registerNewUserEndpoint = '/crud_users/api/v2/user/create';  
-      const response = await api.post(registerNewUserEndpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      if (response.data.status) {
-        toastApiResponse(response, response.data.message);
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const { error } = await authClient.signUp(values);
-
-      if (error) {
-        setError('root', { type: 'server', message: error });
-        setIsPending(false);
+      setIsLoading(true);
+  
+      if (values.password !== values.confirmPassword) {
+        handleApiError();
+        setIsLoading(false);
         return;
       }
+  
+      if (values.password === values.confirmPassword) {
+        try {
+          const formData = new FormData();
+          formData.append("firstname", values.firstName);
+          formData.append("lastname", values.lastName);
+          formData.append("username", values.userName);
+          formData.append("email", values.email);
+          formData.append("mobile", values.mobile);
+          // formData.append("birthDate", values.birthDate);
+          formData.append("password", values.password);
+  
+          const registerNewUserEndpoint = '/crud_users/api/v2/user/create';
+          const response = await api.post(registerNewUserEndpoint, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+  
+          if (response.data.status) {
+            toastApiResponse(response, response.data.message);
+          }
+  
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          setIsPending(true);
+  
+          const { error } = await authClient.signUp(values);
+  
+          if (error) {
+            setError('root', { type: 'server', message: error });
+            setIsPending(false);
+            return;
+          }
+  
+          setIsLoading(false);  
+          await checkSession?.();
+          router.push(paths.dashboard.customers);
 
-      await checkSession?.();
-      
-      // router.refresh();
-      router.push(paths.dashboard.customers);
+        } catch (error) {
+          console.error('Error:', error);
+          toastApiResponse(error, 'An error occurred while connecting to the server, please try again later');
+          setIsLoading(false);
+        }
+      }
     },
     [checkSession, router, setError]
   );
+  
+  const handleGoToListUsers = () => {
+    router.push(paths.dashboard.customers);
+  };
 
   return (
-    <Stack spacing={3}>
-      <Stack spacing={2}>
-        <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-          <UsersIcon size={32}/>
-          <Typography variant="h5">Register a new user</Typography>
+    <Stack spacing={2}>
+      <Typography variant="h4">User</Typography>
+
+      <CardActions sx={{ justifyContent: 'space-between', alignItems: 'center', marginTop: '-20px', marginLeft: '-7px' }}>
+        <Stack direction="row" sx={{ alignItems: 'center' }}>
+          <Stack paddingTop={1.5}>
+            <IdentificationCard size={45} />
+          </Stack>
+
+          <CardHeader
+            subheader="Register your data here and create a new account for you"
+            title="Register new user"
+          />
         </Stack>
 
-        {/* <Typography variant="h5">Sign up</Typography> */}
-        {/* <Typography color="text.secondary" variant="body2">
-          Already have an account?{' '}
-          <Link component={RouterLink} href={paths.auth.signIn} underline="hover" variant="subtitle2">
-            Sign in
-          </Link>
-        </Typography> */}
-      </Stack>
+        <Stack pt={3}>
+          <Button
+            startIcon={<ArrowFatLineLeft fontSize="var(--icon-fontSize-md)" />}
+            variant="contained"
+            color="info"
+            onClick={handleGoToListUsers}
+          >
+            List users
+          </Button>
+        </Stack>
+      </CardActions>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
@@ -161,20 +229,20 @@ export function SignUpForm(): React.JSX.Element {
                 <OutlinedInput {...field} label="First name" />
                 {errors.firstName ?
                   <FormHelperText>
-                  {errors.firstName.message}
+                    {errors.firstName.message}
                   </FormHelperText> : null}
               </FormControl>
             )}
           />
-          
+
           <Controller
             control={control}
             name="lastName"
             render={({ field }) => (
-              <FormControl error={Boolean(errors.firstName)}>
+              <FormControl error={Boolean(errors.lastName)}>
                 <InputLabel>Last name</InputLabel>
                 <OutlinedInput {...field} label="Last name" />
-                {errors.firstName ? <FormHelperText>{errors.firstName.message}</FormHelperText> : null}
+                {errors.lastName ? <FormHelperText>{errors.lastName.message}</FormHelperText> : null}
               </FormControl>
             )}
           />
@@ -204,18 +272,35 @@ export function SignUpForm(): React.JSX.Element {
           />
 
           <Controller
-            control={control}
-            name="phoneNumber"
-            render={({ field }) => (
-              <FormControl error={Boolean(errors.phoneNumber)}>
-                <InputLabel>Phone number</InputLabel>
-                <OutlinedInput {...field} label="Phone number" type="tel" />
-                {errors.phoneNumber ? <FormHelperText>{errors.phoneNumber.message}</FormHelperText> : null}
-              </FormControl>
-            )}
-          />
+              name="mobile"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <FormControl error={Boolean(errors.mobile)}>
+                  <InputLabel htmlFor="mobile">Mobile</InputLabel>
+                  <OutlinedInput
+                    {...field}
+                    id="mobile"
+                    label="Mobile"
+                    type='tel'
+                    value={formatPhoneNumber(field.value)}
+                    onChange={(e) => {
+                      // const formattedValue = formatPhoneNumber(e.target.value);
+                      // field.onChange(e.target.value); // Set raw value to form state
+                      // field.onBlur(); // Mark field as blurred to trigger validation
+                      const cleanedValue = e.target.value.replace(/\D/g, '');
+                      field.onChange(cleanedValue);
+                    }}
+                  />
+                  {errors.mobile && (
+                    <FormHelperText>{errors.mobile.message}</FormHelperText>
+                  )}
+                </FormControl>
+              )}
+            />
 
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
+
+          {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
               <DateTimePicker
                 label="Phone number"
@@ -223,50 +308,130 @@ export function SignUpForm(): React.JSX.Element {
                 onChange={(newValue) => setValue(newValue)}
               />
             </DemoContainer>
-          </LocalizationProvider>
-
-          <Controller
-            control={control}
-            name="password"
-            render={({ field }) => (
-              <FormControl error={Boolean(errors.password)}>
-                <InputLabel>Password</InputLabel>
-                <OutlinedInput {...field} label="Password" type="password" />
-                {errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
-              </FormControl>
-            )}
-          />
+          </LocalizationProvider> */}
 
           {/* <Controller
+            name="birthDate"
             control={control}
-            name="terms"
             render={({ field }) => (
-              <div>
-                <FormControlLabel
-                  control={<Checkbox {...field} />}
-                  label={
-                    <React.Fragment>
-                      I have read the <Link>terms and conditions</Link>
-                    </React.Fragment>
-                  }
-                />
-                {errors.terms ? <FormHelperText error>{errors.terms.message}</FormHelperText> : null}
-              </div>
+              <FormControl error={Boolean(errors.birthDate)}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
+                    <DateTimePicker
+                      {...field}
+                      label="Birth date"
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  </DemoContainer>
+                </LocalizationProvider>
+
+                {errors.birthDate && (
+                  <FormHelperText>
+                    {errors.birthDate.message}
+                  </FormHelperText>
+                )}
+              </FormControl>
             )}
           /> */}
 
-          {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
+          <Stack spacing={2} sx={{ alignItems: 'flex-start', width: '100%' }} my={2}>
+            <Grid container spacing={2}>
+              <Grid item lg={6} xs={12}>
+                <Controller
+                  control={control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormControl error={Boolean(errors.password)} sx={{ width: '100%' }}>
+                      <InputLabel>Password</InputLabel>
+                      <OutlinedInput
+                        {...field}
+                        endAdornment={
+                          showPassword ? (
+                            <EyeIcon
+                              cursor="pointer"
+                              fontSize="var(--icon-fontSize-md)"
+                              onClick={(): void => {
+                                setShowPassword(false);
+                              }}
+                            />
+                          ) : (
+                            <EyeSlashIcon
+                              cursor="pointer"
+                              fontSize="var(--icon-fontSize-md)"
+                              onClick={(): void => {
+                                setShowPassword(true);
+                              }}
+                            />
+                          )
+                        }
+                        label="Password"
+                        type={showPassword ? 'text' : 'password'}
+                      />
+                      {errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
+                    </FormControl>
+                  )}
+                />
+              </Grid>
 
-          <Button disabled={isPending} type="submit" variant="contained">
-            Sign up
-          </Button>
+              <Grid item lg={6} xs={12}>
+                <Controller
+                  control={control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormControl error={Boolean(errors.confirmPassword)} sx={{ width: '100%' }}>
+                      <InputLabel>Confirm password</InputLabel>
+                      <OutlinedInput
+                        {...field}
+                        endAdornment={
+                          showConfirmPassword ? (
+                            <EyeIcon
+                              cursor="pointer"
+                              fontSize="var(--icon-fontSize-md)"
+                              onClick={(): void => {
+                                setShowConfirmPassword(false);
+                              }}
+                            />
+                          ) : (
+                            <EyeSlashIcon
+                              cursor="pointer"
+                              fontSize="var(--icon-fontSize-md)"
+                              onClick={(): void => {
+                                setShowConfirmPassword(true);
+                              }}
+                            />
+                          )
+                        }
+                        label="Confirm password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                      />
+                      {errors.confirmPassword ? <FormHelperText>{errors.confirmPassword.message}</FormHelperText> : null}
+                    </FormControl>
+                  )}
+                />
+              </Grid>
+            </Grid>
+          </Stack>
+
+          <CardActions sx={{ justifyContent: 'flex-end' }}>
+            <Button
+              startIcon={isLoading == false && <ClipboardText fontSize="var(--icon-fontSize-md)" />}
+              variant="contained"
+              type="submit"
+              color="primary"
+              disabled={isPending}
+            >
+              {isLoading ? (
+                <CircularProgress size={14} color="inherit" />
+              ) : (
+                'Register'
+              )}
+            </Button>
+          </CardActions>
         </Stack>
       </form>
 
       <ToastContainer />
-
-      {/* <Alert color="warning">Created users are not persisted</Alert> */}
-
     </Stack>
   );
 }

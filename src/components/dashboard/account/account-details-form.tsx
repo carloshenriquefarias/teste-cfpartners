@@ -103,8 +103,7 @@ export function AccountDetailsForm({ userId }: any): React.JSX.Element {
   return (
     <>
       <Stack spacing={0} mb={3}>
-        <Card>
-          
+        <Card>        
           <Stack direction="row" spacing={2} padding={3} sx={{ alignItems: 'center' }}>
             <UserCircle size={75} color='gray'/>
             {user && 

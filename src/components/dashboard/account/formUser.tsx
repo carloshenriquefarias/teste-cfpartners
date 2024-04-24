@@ -13,6 +13,7 @@ import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import Grid from '@mui/material/Grid';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import dayjs, { Dayjs } from 'dayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
@@ -25,9 +26,11 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api } from '@/services/api';
 
+import { toast } from 'react-toastify';
 import { toastApiResponse } from '@/utils/Toast';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/ReactToastify.min.css";
+import 'react-toastify/dist/ReactToastify.css';
 
 import { useRouter } from 'next/navigation';
 import { paths } from '@/paths';
@@ -42,12 +45,6 @@ import { Stack } from '@mui/material';
 import { ArrowFatLineLeft, FileText, PencilLine } from '@phosphor-icons/react';
 import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 import { EyeSlash as EyeSlashIcon } from '@phosphor-icons/react/dist/ssr/EyeSlash';
-
-// interface User {
-//   id: string;
-//   firstname: string;
-// }
-
 interface User {
   id: string;
   firstname: string;
@@ -55,39 +52,25 @@ interface User {
   username: string;
   email: string;
   mobile: string;
+  // birthDate: string;
   password: string;
-  // created_at: string;
-  // updated_at: string;
-  // deleted_at: string | null;
 }
-
-// const schema = zod.object({
-//   firstname: zod.string().min(1, { message: 'First name is required' }),
-// });
 
 const schema = zod.object({
   firstname: zod.string().min(1, { message: 'First name is required' }),
   lastname: zod.string().min(1, { message: 'Last name is required' }),
-  username: zod.string().min(1, { message: 'Last name is required' }),
+  username: zod.string().min(1, { message: 'User name is required' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
   // birthDate: zod.date().min(new Date(1900, 0, 1), { message: 'Invalid birth date' }),
-  // terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
+  // birthDate: zod.string().refine((value) => {
+  //   const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+  //   return dateRegex.test(value);
+  // }, { message: 'Invalid birth date. Please use the format DD/MM/YYYY' }),
   mobile: zod.string()
-    .min(1, { message: 'Phone number is required' })
-    .regex(/^\d+$/, { message: 'Phone number must contain only digits' }),
+    .min(1, { message: 'Mobile is required' })
+    .regex(/^\d+$/, { message: 'Mobile must contain only digits' }),
   password: zod.string().min(6, { message: 'Password should be at least 6 characters' }),
-  // confirmPassword: zod
-  // .string()
-  // .min(6, { message: 'Confirm password should be at least 6 characters' })
-  // confirmPassword: zod
-  //   .string()
-  //   .min(6, { message: 'Confirm password should be at least 6 characters' })
-  //   .refine(({value, data} : any) => {
-  //     return data.password === value;
-  //   }, {
-  //     message: 'Passwords do not match',
-  //     path: ['confirmPassword'],
-  //   }),
+  confirmPassword: zod.string().min(6, { message: 'Confirm password should be the same password' }),
 });
 
 type FormValues = zod.infer<typeof schema>;
@@ -96,9 +79,25 @@ export default function FormUser({ user }: any) {
 
   const router = useRouter();
   const [showPassword, setShowPassword] = React.useState<boolean>();
-  const [value, setValue] = React.useState<Dayjs | null>(dayjs('2024-10-10'));
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState<boolean>();
+  // const [value, setValue] = React.useState<Dayjs | null>(dayjs('2024-10-10'));
 
   const [formattedMobile, setFormattedMobile] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleApiError = () => {
+    const title = 'Your password is incorrect. Please try again';
+    toast.error(title, {
+      position: "top-center",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
+    });
+  };
 
   const formatPhoneNumber = (value: any) => {
     const cleaned = value.replace(/\D/g, '');
@@ -115,6 +114,14 @@ export default function FormUser({ user }: any) {
     return formattedValue;
   };
 
+  const formatBirthDate = (dateString: any) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
       // id: user?.id || '', 
@@ -122,15 +129,24 @@ export default function FormUser({ user }: any) {
       lastname: user?.lastname || '',
       username: user?.username || '',
       email: user?.email || '',
-      // birthDate: user?.firstname || '', 
       mobile: user?.mobile || '',
-      password: user?.password || '',
-      // confirmPassword: user?.confirmPassword || '', 
+      // birthDate: user?.birthDate || '', 
+      // birthDate: user?.birthDate ? formatBirthDate(user.birthDate) : '',
+      password: '',
+      confirmPassword: '', 
     }, resolver: zodResolver(schema),
   });
 
   const onSubmit = React.useCallback(
     async (values: any): Promise<void> => {
+      setIsLoading(true);
+
+      if (values.password !== values.confirmPassword) {
+        handleApiError();
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const formData = new FormData();
         formData.append("firstname", values.firstname);
@@ -138,6 +154,7 @@ export default function FormUser({ user }: any) {
         formData.append("email", values.email);
         formData.append("mobile", values.mobile);
         formData.append("username", values.username);
+        // formData.append("birthDate", values.birthDate);
         formData.append("password", values.password);
         formData.append("id", user.id);
 
@@ -150,11 +167,11 @@ export default function FormUser({ user }: any) {
 
         if (response.data.status) {
           toastApiResponse(response, response.data.message);
-        }
+        }  
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
+        await new Promise(resolve => setTimeout(resolve, 1000));
         router.push(paths.dashboard.customers);
+        setIsLoading(false);
 
       } catch (error) {
         console.error('Error:', error);
@@ -169,7 +186,6 @@ export default function FormUser({ user }: any) {
   };
 
   useEffect(() => {
-    // Se houver um número inicial passado, formate-o e atualize o estado
     if (user?.mobile) {
       const formatted = formatPhoneNumber(user?.mobile);
       setFormattedMobile(formatted);
@@ -303,46 +319,19 @@ export default function FormUser({ user }: any) {
             )}
           />
 
-          {/* <Controller
-            name="mobile"
-            control={control}
-            render={({ field }) => (
-              <FormControl error={Boolean(errors.mobile)}>
-                <InputLabel htmlFor="mobile">
-                  Phone
-                </InputLabel>
-                <OutlinedInput
-                  {...field}
-                  id="mobile"
-                  label="mobile"
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-                {errors.mobile && (
-                  <FormHelperText>
-                    {errors.mobile.message}
-                  </FormHelperText>
-                )}
-              </FormControl>
-            )}
-          /> */}
-
           <Controller
             name="mobile"
             control={control}
             render={({ field }) => (
               <FormControl error={Boolean(errors.mobile)}>
-                <InputLabel htmlFor="mobile">Phone</InputLabel>
+                <InputLabel htmlFor="mobile">Mobile</InputLabel>
                 <OutlinedInput
                   {...field}
                   id="mobile"
-                  label="Phone"
+                  label="Mobile"
                   value={formattedMobile}
                   onChange={(e) => {
-                    // Atualiza o estado com o valor formatado do telefone
                     setFormattedMobile(formatPhoneNumber(e.target.value));
-
-                    // Remove caracteres não numéricos e atualiza o campo no formulário
                     const cleanedValue = e.target.value.replace(/\D/g, '');
                     field.onChange(cleanedValue);
                   }}
@@ -355,23 +344,24 @@ export default function FormUser({ user }: any) {
           />
 
           {/* <Controller
-            name="firstname"
+            name="birthDate"
             control={control}
             render={({ field }) => (
-              <FormControl error={Boolean(errors.firstname)}>
-                <InputLabel htmlFor="firstname">
-                  Birth date
-                </InputLabel>
-                <OutlinedInput
-                  {...field}
-                  id="firstname"
-                  label="First name"
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-                {errors.firstname && (
+              <FormControl error={Boolean(errors.birthDate)}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
+                    <DateTimePicker
+                      {...field}
+                      label="Birth date"
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  </DemoContainer>
+                </LocalizationProvider>
+
+                {errors.birthDate && (
                   <FormHelperText>
-                    {errors.firstname.message}
+                    {errors.birthDate.message}
                   </FormHelperText>
                 )}
               </FormControl>
@@ -382,18 +372,48 @@ export default function FormUser({ user }: any) {
             <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
               <DateTimePicker
                 label="Birth date"
-                value={value}
-                onChange={(newValue) => setValue(newValue)}
+                // value={value}
+                // onChange={(newValue) => setValue(newValue)}
               />
             </DemoContainer>
           </LocalizationProvider>
+
+          {/* <Controller
+            name="birthDate"
+            control={control}
+            render={({ field }) => (
+              <FormControl error={Boolean(errors.birthDate)}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
+                    <DateTimePicker
+                      {...field}
+                      label="Birth date"
+                      value={field.value}
+                      onChange={(value) => {
+                        // Formatar o valor da data ao definir no campo
+                        const formattedDate = formatBirthDate(value);
+                        field.onChange(formattedDate);
+                      }}
+                      // renderInput={(props) => <TextField {...props} variant="outlined" />}
+                    />
+                  </DemoContainer>
+                </LocalizationProvider>
+                {errors.birthDate && (
+                  <FormHelperText>
+                    {errors.birthDate.message}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            )}
+          /> */}
+
 
           <Stack direction="row" sx={{ alignItems: 'center' }}>
             <Stack paddingTop={1.5}>
               <FileText size={40} />             
             </Stack>
             <CardHeader 
-                subheader="If you wish to change your password insert your above your new data" 
+                subheader="If you wish to change your password insert your new data above" 
                 title="Change password"
               />
           </Stack>
@@ -442,19 +462,19 @@ export default function FormUser({ user }: any) {
               <Grid item lg={6} xs={12}>
               <Controller
                 control={control}
-                name="password"
+                name="confirmPassword"
                 render={({ field }) => (
-                  <FormControl error={Boolean(errors.password)} sx={{ width:'100%' }}>
+                  <FormControl error={Boolean(errors.confirmPassword)} sx={{ width:'100%' }}>
                     <InputLabel>Confirm password</InputLabel>
                     <OutlinedInput
                       {...field}
                       endAdornment={
-                        showPassword ? (
+                        showConfirmPassword ? (
                           <EyeIcon
                             cursor="pointer"
                             fontSize="var(--icon-fontSize-md)"
                             onClick={(): void => {
-                              setShowPassword(false);
+                              setShowConfirmPassword(false);
                             }}
                           />
                         ) : (
@@ -462,15 +482,15 @@ export default function FormUser({ user }: any) {
                             cursor="pointer"
                             fontSize="var(--icon-fontSize-md)"
                             onClick={(): void => {
-                              setShowPassword(true);
+                              setShowConfirmPassword(true);
                             }}
                           />
                         )
                       }
                       label="Confirm password"
-                      type={showPassword ? 'text' : 'password'}
+                      type={showConfirmPassword ? 'text' : 'password'}
                     />
-                    {errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
+                    {errors.confirmPassword ? <FormHelperText>{errors.confirmPassword.message}</FormHelperText> : null}
                   </FormControl>
                 )}
               />
@@ -481,15 +501,21 @@ export default function FormUser({ user }: any) {
 
         <CardActions sx={{ justifyContent: 'flex-end' }}>
           <Button
-            startIcon={<UploadSimple fontSize="var(--icon-fontSize-md)" />}
+            startIcon={isLoading == false && <UploadSimple fontSize="var(--icon-fontSize-md)" />}
             variant="contained"
-            type="submit"
             color="primary"
+            type="submit"
+            disabled={isLoading}
           >
-            Update user
+            {isLoading ? (
+              <CircularProgress size={14} color="inherit" />
+            ) : (
+              'Update user'
+            )}
           </Button>
         </CardActions>
       </form>
+      <ToastContainer />
     </>
   )
 }

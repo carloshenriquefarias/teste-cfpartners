@@ -39,8 +39,8 @@ export default function Modal({ open, handleClose, handleDeleteUserById } : any)
 
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Once deleted, it´s possible to recover the user delete yet, do not worry. 
-            Just access the user list excluded and bring back the user again.
+            Once deleted, it is not possible to recover the user. 
+            So please, be certanly you wanna do that.
           </DialogContentText>
         </DialogContent>
 
