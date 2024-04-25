@@ -1,19 +1,18 @@
 'use client';
 
 import * as React from 'react';
+
 import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
+import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import Select from '@mui/material/Select';
+import FormHelperText from '@mui/material/FormHelperText';
 import Grid from '@mui/material/Grid';
-import CircularProgress from '@mui/material/CircularProgress';
+import InputLabel from '@mui/material/InputLabel';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import { Stack } from '@mui/material';
 
 import dayjs, { Dayjs } from 'dayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
@@ -21,8 +20,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
-import { UploadSimple } from '@phosphor-icons/react/dist/ssr/UploadSimple';
-import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api } from '@/services/api';
 
@@ -37,14 +34,12 @@ import { paths } from '@/paths';
 
 import { z as zod } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import { Controller, useForm } from 'react-hook-form';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormHelperText from '@mui/material/FormHelperText';
-import { Stack } from '@mui/material';
+
 import { ArrowFatLineLeft, FileText, PencilLine } from '@phosphor-icons/react';
 import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 import { EyeSlash as EyeSlashIcon } from '@phosphor-icons/react/dist/ssr/EyeSlash';
+import { UploadSimple } from '@phosphor-icons/react/dist/ssr/UploadSimple';
 interface User {
   id: string;
   firstname: string;
@@ -69,8 +64,8 @@ const schema = zod.object({
   mobile: zod.string()
     .min(1, { message: 'Mobile is required' })
     .regex(/^\d+$/, { message: 'Mobile must contain only digits' }),
-  password: zod.string().min(6, { message: 'Password should be at least 6 characters' }),
-  confirmPassword: zod.string().min(6, { message: 'Confirm password should be the same password' }),
+  password: zod.string().min(6, { message: 'Password should be at least 6 characters' }).optional(),
+  confirmPassword: zod.string().min(6, { message: 'Confirm password should be the same password' }).optional(),
 });
 
 type FormValues = zod.infer<typeof schema>;
@@ -176,6 +171,7 @@ export default function FormUser({ user }: any) {
       } catch (error) {
         console.error('Error:', error);
         toastApiResponse(error, 'An error occurred while connecting to the server, please try again later');
+        setIsLoading(false);
       }
     },
     []
@@ -219,7 +215,7 @@ export default function FormUser({ user }: any) {
 
       <Divider/>
 
-      <Stack spacing={2} sx={{ alignItems: 'flex-start', width:'100%' }} my={2}></Stack>
+      <Stack spacing={2} sx={{ alignItems: 'flex-start', width:'100%' }} my={2}/>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
@@ -426,6 +422,7 @@ export default function FormUser({ user }: any) {
               <Controller
                 control={control}
                 name="password"
+                defaultValue=""
                 render={({ field }) => (
                   <FormControl error={Boolean(errors.password)} sx={{ width:'100%' }}>
                     <InputLabel>New password</InputLabel>
@@ -463,6 +460,7 @@ export default function FormUser({ user }: any) {
               <Controller
                 control={control}
                 name="confirmPassword"
+                defaultValue=""
                 render={({ field }) => (
                   <FormControl error={Boolean(errors.confirmPassword)} sx={{ width:'100%' }}>
                     <InputLabel>Confirm password</InputLabel>

@@ -15,7 +15,7 @@ api.interceptors.response.use((response) => response, error => {
         return Promise.reject(new AppError(error.response.data.message))
 
     } else {
-        return Promise.reject(new AppError('Erro no servidor. Tente mais tarde!'))
+        return Promise.reject(new AppError('An error occurred while connecting to the server, please try again later'))
     }
 });
 
