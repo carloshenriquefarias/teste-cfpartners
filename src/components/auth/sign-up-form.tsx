@@ -3,11 +3,13 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
-import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import CardActions from '@mui/material/CardActions';
+import CardHeader from '@mui/material/CardHeader';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
+import { Grid, TextField } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
@@ -17,19 +19,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
 
-import CardActions from '@mui/material/CardActions';
-import CardHeader from '@mui/material/CardHeader';
-import { Grid } from '@mui/material';
-
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
 
-import dayjs, { Dayjs } from 'dayjs';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import dayjs from 'dayjs';
+// import { Dayjs } from 'dayjs';
+// import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+// import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 import { useState } from 'react';
 import { api } from '@/services/api';
@@ -43,27 +42,19 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ArrowFatLineLeft, ClipboardText, IdentificationCard} from '@phosphor-icons/react';
 import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 import { EyeSlash as EyeSlashIcon } from '@phosphor-icons/react/dist/ssr/EyeSlash';
-
-// interface FormDataUser {
-//   firstName: string;
-//   lastName: string;
-//   userName?: string;
-//   email: string;
-//   phoneNumber: string;
-//   password: string;
-// }
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 const schema = zod.object({
   firstName: zod.string().min(1, { message: 'Firstname is required' }),
   lastName: zod.string().min(1, { message: 'Lastname is required' }),
   userName: zod.string().min(1, { message: 'Username is required' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
-  // birthDate: zod.date().min(new Date(1900, 0, 1), { message: 'Invalid birth date' }),
-  // birthDate: zod.string().refine((value) => {
-  //   const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-  //   return dateRegex.test(value);
-  // }, { message: 'Invalid birth date. Please use the format DD/MM/YYYY' }),
-  
+  birthDate: zod.string().refine((value) => {
+    const dateFormatRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!dateFormatRegex.test(value)) {return false}
+    const [day, month, year] = value.split('/');
+    return dayjs(`${year}-${month}-${day}`, 'YYYY-MM-DD').isValid();
+  }, 'Birth date is required'),
   mobile: zod.string()
     .min(1, { message: 'Mobile is required' })
     .regex(/^\d+$/, { message: 'Mobile must contain only digits' }),
@@ -78,7 +69,7 @@ const defaultValues = {
   lastName: '',
   userName: '',
   email: '',
-  // birthDate: '', 
+  birthDate: '', 
   mobile: '',
   password: '',
   confirmPassword: '',
@@ -93,7 +84,6 @@ export function SignUpForm(): React.JSX.Element {
   const [showPassword, setShowPassword] = React.useState<boolean>();
   const [showConfirmPassword, setShowConfirmPassword] = React.useState<boolean>();
   const [isLoading, setIsLoading] = useState(false);
-  // const [value, setValue] = React.useState<Dayjs | null>(dayjs('2024-10-10'));
 
   const handleApiError = () => {
     const title = 'Your password is incorrect. Please try again';
@@ -124,7 +114,13 @@ export function SignUpForm(): React.JSX.Element {
     return formattedValue;
   };
 
-  const { control, handleSubmit, setError, formState: { errors } } = useForm<Values>({
+  const convertDate = (dateString: string): string => {
+    const [month, day, year] = dateString.split('/');
+    const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    return formattedDate;
+  };
+
+  const { control, handleSubmit,setError, formState: { errors } } = useForm<Values>({
     defaultValues,
     resolver: zodResolver(schema)
   });
@@ -132,12 +128,17 @@ export function SignUpForm(): React.JSX.Element {
   const onSubmit = React.useCallback(
     async (values: Values): Promise<void> => {
       setIsLoading(true);
+      
+      // console.log('values 11:08 => ',values)
   
       if (values.password !== values.confirmPassword) {
         handleApiError();
         setIsLoading(false);
         return;
       }
+
+      const convertedDate = convertDate(values.birthDate);
+      // console.log('convertedDate 18:48 =>', convertedDate);
   
       if (values.password === values.confirmPassword) {
         try {
@@ -147,7 +148,7 @@ export function SignUpForm(): React.JSX.Element {
           formData.append("username", values.userName);
           formData.append("email", values.email);
           formData.append("mobile", values.mobile);
-          // formData.append("birthDate", values.birthDate);
+          formData.append("dateofbirth", convertedDate);
           formData.append("password", values.password);
   
           const registerNewUserEndpoint = '/crud_users/api/v2/user/create';
@@ -299,41 +300,46 @@ export function SignUpForm(): React.JSX.Element {
               )}
             />
 
-
-          {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
-              <DateTimePicker
-                label="Phone number"
-                value={value}
-                onChange={(newValue) => setValue(newValue)}
-              />
-            </DemoContainer>
-          </LocalizationProvider> */}
-
-          {/* <Controller
-            name="birthDate"
-            control={control}
-            render={({ field }) => (
-              <FormControl error={Boolean(errors.birthDate)}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
-                    <DateTimePicker
-                      {...field}
-                      label="Birth date"
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </DemoContainer>
-                </LocalizationProvider>
-
-                {errors.birthDate && (
-                  <FormHelperText>
-                    {errors.birthDate.message}
-                  </FormHelperText>
-                )}
-              </FormControl>
+          <FormControl fullWidth error={Boolean(errors.birthDate)}>
+            <Controller
+              name="birthDate"
+              control={control}
+              defaultValue=""
+              rules={{
+                validate: (value) => {
+                  try {
+                    schema.parse(value);
+                    return true;
+                  } catch (error) {
+                    return false;
+                  }
+                }
+              }}
+              render={({ field }) => (
+                <DatePicker
+                  {...field}
+                  label="Birth date"
+                  value={field.value ? dayjs(field.value, 'DD/MM/YYYY').toDate() : null}
+                  onChange={(newValue) => {
+                    const formattedValue = newValue ? dayjs(newValue).format('DD/MM/YYYY') : '';
+                    field.onChange(formattedValue);
+                  }}
+                  // renderInput={(params: any) => (
+                  //   <TextField
+                  //     {...params}
+                  //     variant="outlined"
+                  //     fullWidth
+                  //     error={Boolean(errors.birthDate)}
+                  //   />
+                  // )}
+                  // inputFormat="DD/MM/YYYY"
+                />
+              )}
+            />
+            {errors.birthDate && (
+              <FormHelperText>{errors.birthDate.message}</FormHelperText>
             )}
-          /> */}
+          </FormControl>
 
           <Stack spacing={2} sx={{ alignItems: 'flex-start', width: '100%' }} my={2}>
             <Grid container spacing={2}>
