@@ -12,13 +12,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Grid from '@mui/material/Grid';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
-import { Stack } from '@mui/material';
-
-import dayjs, { Dayjs } from 'dayjs';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { Stack, TextField } from '@mui/material';
 
 import { useEffect, useState } from 'react';
 import { api } from '@/services/api';
@@ -47,7 +41,7 @@ interface User {
   username: string;
   email: string;
   mobile: string;
-  // birthDate: string;
+  birthDate: string;
   password: string;
 }
 
@@ -56,11 +50,7 @@ const schema = zod.object({
   lastname: zod.string().min(1, { message: 'Last name is required' }),
   username: zod.string().min(1, { message: 'User name is required' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
-  // birthDate: zod.date().min(new Date(1900, 0, 1), { message: 'Invalid birth date' }),
-  // birthDate: zod.string().refine((value) => {
-  //   const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-  //   return dateRegex.test(value);
-  // }, { message: 'Invalid birth date. Please use the format DD/MM/YYYY' }),
+  birthDate: zod.string().min(1, { message: 'Date is required' }),
   mobile: zod.string()
     .min(1, { message: 'Mobile is required' })
     .regex(/^\d+$/, { message: 'Mobile must contain only digits' }),
@@ -73,9 +63,11 @@ type FormValues = zod.infer<typeof schema>;
 export default function FormUser({ user }: any) {
 
   const router = useRouter();
+
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = React.useState<boolean>();
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showConfirmPassword, setShowConfirmPassword] = React.useState<boolean>();
-  // const [value, setValue] = React.useState<Dayjs | null>(dayjs('2024-10-10'));
 
   const [formattedMobile, setFormattedMobile] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -109,28 +101,23 @@ export default function FormUser({ user }: any) {
     return formattedValue;
   };
 
-  const formatBirthDate = (dateString: any) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
-      // id: user?.id || '', 
       firstname: user?.firstname || '',
       lastname: user?.lastname || '',
       username: user?.username || '',
       email: user?.email || '',
       mobile: user?.mobile || '',
-      // birthDate: user?.birthDate || '', 
-      // birthDate: user?.birthDate ? formatBirthDate(user.birthDate) : '',
+      birthDate: user?.dateofbirth || '',
       password: '',
-      confirmPassword: '', 
+      confirmPassword: '',
     }, resolver: zodResolver(schema),
   });
+
+  function extractDate(dateTimeString: string) {
+    const datePart = dateTimeString.split(' ')[0];
+    return datePart;
+  }
 
   const onSubmit = React.useCallback(
     async (values: any): Promise<void> => {
@@ -149,7 +136,7 @@ export default function FormUser({ user }: any) {
         formData.append("email", values.email);
         formData.append("mobile", values.mobile);
         formData.append("username", values.username);
-        // formData.append("birthDate", values.birthDate);
+        formData.append("dateofbirth", values.birthDate);
         formData.append("password", values.password);
         formData.append("id", user.id);
 
@@ -162,7 +149,7 @@ export default function FormUser({ user }: any) {
 
         if (response.data.status) {
           toastApiResponse(response, response.data.message);
-        }  
+        }
 
         await new Promise(resolve => setTimeout(resolve, 1000));
         router.push(paths.dashboard.customers);
@@ -190,32 +177,32 @@ export default function FormUser({ user }: any) {
 
   return (
     <>
-      <CardActions sx={{ justifyContent: 'space-between', alignItems: 'center'}}>
+      <CardActions sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <Stack direction="row" sx={{ alignItems: 'center' }}>
           <Stack paddingTop={1.5}>
-            <PencilLine size={40} />            
+            <PencilLine size={40} />
           </Stack>
-          <CardHeader 
-              subheader="Edit your data here and update as much as possible you wish" 
-              title="Your currently personal data"
-            />
+          <CardHeader
+            subheader="Edit your data here and update as much as possible you wish"
+            title="Your currently personal data"
+          />
         </Stack>
 
         <Stack pt={3}>
           <Button
             startIcon={<ArrowFatLineLeft fontSize="var(--icon-fontSize-md)" />}
             variant="contained"
-            color="info"  
-            onClick={handleGoToListUsers}          
+            color="info"
+            onClick={handleGoToListUsers}
           >
             List users
           </Button>
         </Stack>
       </CardActions>
 
-      <Divider/>
+      <Divider />
 
-      <Stack spacing={2} sx={{ alignItems: 'flex-start', width:'100%' }} my={2}/>
+      <Stack spacing={2} sx={{ alignItems: 'flex-start', width: '100%' }} my={2} />
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
@@ -339,22 +326,22 @@ export default function FormUser({ user }: any) {
             )}
           />
 
-          {/* <Controller
+          <Controller
             name="birthDate"
             control={control}
             render={({ field }) => (
               <FormControl error={Boolean(errors.birthDate)}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
-                    <DateTimePicker
-                      {...field}
-                      label="Birth date"
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </DemoContainer>
-                </LocalizationProvider>
-
+                <TextField
+                  {...field}
+                  id="birthDate"
+                  label="Birth date"
+                  type="date"
+                  value={extractDate(field.value)}
+                  onChange={field.onChange}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
                 {errors.birthDate && (
                   <FormHelperText>
                     {errors.birthDate.message}
@@ -362,136 +349,96 @@ export default function FormUser({ user }: any) {
                 )}
               </FormControl>
             )}
-          /> */}
-
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
-              <DateTimePicker
-                label="Birth date"
-                // value={value}
-                // onChange={(newValue) => setValue(newValue)}
-              />
-            </DemoContainer>
-          </LocalizationProvider>
-
-          {/* <Controller
-            name="birthDate"
-            control={control}
-            render={({ field }) => (
-              <FormControl error={Boolean(errors.birthDate)}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
-                    <DateTimePicker
-                      {...field}
-                      label="Birth date"
-                      value={field.value}
-                      onChange={(value) => {
-                        // Formatar o valor da data ao definir no campo
-                        const formattedDate = formatBirthDate(value);
-                        field.onChange(formattedDate);
-                      }}
-                      // renderInput={(props) => <TextField {...props} variant="outlined" />}
-                    />
-                  </DemoContainer>
-                </LocalizationProvider>
-                {errors.birthDate && (
-                  <FormHelperText>
-                    {errors.birthDate.message}
-                  </FormHelperText>
-                )}
-              </FormControl>
-            )}
-          /> */}
-
+          />
 
           <Stack direction="row" sx={{ alignItems: 'center' }}>
             <Stack paddingTop={1.5}>
-              <FileText size={40} />             
+              <FileText size={40} />
             </Stack>
-            <CardHeader 
-                subheader="If you wish to change your password insert your new data above" 
-                title="Change password"
-              />
+            <CardHeader
+              subheader="If you wish to change your password insert your new data above"
+              title="Change password"
+            />
           </Stack>
-            
+
           <Divider />
 
-          <Stack spacing={2} sx={{ alignItems: 'flex-start', width:'100%' }} my={2}>
+          <Stack spacing={2} sx={{ alignItems: 'flex-start', width: '100%' }} my={2}>
             <Grid container spacing={2}>
               <Grid item lg={6} xs={12}>
-              <Controller
-                control={control}
-                name="password"
-                defaultValue=""
-                render={({ field }) => (
-                  <FormControl error={Boolean(errors.password)} sx={{ width:'100%' }}>
-                    <InputLabel>New password</InputLabel>
-                    <OutlinedInput
-                      {...field}
-                      endAdornment={
-                        showPassword ? (
-                          <EyeIcon
-                            cursor="pointer"
-                            fontSize="var(--icon-fontSize-md)"
-                            onClick={(): void => {
-                              setShowPassword(false);
-                            }}
-                          />
-                        ) : (
-                          <EyeSlashIcon
-                            cursor="pointer"
-                            fontSize="var(--icon-fontSize-md)"
-                            onClick={(): void => {
-                              setShowPassword(true);
-                            }}
-                          />
-                        )
-                      }
-                      label="New password"
-                      type={showPassword ? 'text' : 'password'}
-                    />
-                    {errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
-                  </FormControl>
-                )}
-              />
+                <Controller
+                  control={control}
+                  name="password"
+                  defaultValue=""
+                  render={({ field }) => (
+                    <FormControl error={Boolean(errors.password)} sx={{ width: '100%' }}>
+                      <InputLabel>New password</InputLabel>
+                      <OutlinedInput
+                        {...field}
+                        endAdornment={
+                          showPassword ? (
+                            <EyeIcon
+                              cursor="pointer"
+                              fontSize="var(--icon-fontSize-md)"
+                              onClick={(): void => {
+                                setShowPassword(false);
+                              }}
+                            />
+                          ) : (
+                            <EyeSlashIcon
+                              cursor="pointer"
+                              fontSize="var(--icon-fontSize-md)"
+                              onClick={(): void => {
+                                setShowPassword(true);
+                              }}
+                            />
+                          )
+                        }
+                        label="New password"
+                        type={showPassword ? 'text' : 'password'}
+                      />
+                      {errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
+                    </FormControl>
+                  )}
+                />
               </Grid>
 
               <Grid item lg={6} xs={12}>
-              <Controller
-                control={control}
-                name="confirmPassword"
-                defaultValue=""
-                render={({ field }) => (
-                  <FormControl error={Boolean(errors.confirmPassword)} sx={{ width:'100%' }}>
-                    <InputLabel>Confirm password</InputLabel>
-                    <OutlinedInput
-                      {...field}
-                      endAdornment={
-                        showConfirmPassword ? (
-                          <EyeIcon
-                            cursor="pointer"
-                            fontSize="var(--icon-fontSize-md)"
-                            onClick={(): void => {
-                              setShowConfirmPassword(false);
-                            }}
-                          />
-                        ) : (
-                          <EyeSlashIcon
-                            cursor="pointer"
-                            fontSize="var(--icon-fontSize-md)"
-                            onClick={(): void => {
-                              setShowConfirmPassword(true);
-                            }}
-                          />
-                        )
-                      }
-                      label="Confirm password"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                    />
-                    {errors.confirmPassword ? <FormHelperText>{errors.confirmPassword.message}</FormHelperText> : null}
-                  </FormControl>
-                )}
-              />
+                <Controller
+                  control={control}
+                  name="confirmPassword"
+                  defaultValue=""
+                  render={({ field }) => (
+                    <FormControl error={Boolean(errors.confirmPassword)} sx={{ width: '100%' }}>
+                      <InputLabel>Confirm password</InputLabel>
+                      <OutlinedInput
+                        {...field}
+                        endAdornment={
+                          showConfirmPassword ? (
+                            <EyeIcon
+                              cursor="pointer"
+                              fontSize="var(--icon-fontSize-md)"
+                              onClick={(): void => {
+                                setShowConfirmPassword(false);
+                              }}
+                            />
+                          ) : (
+                            <EyeSlashIcon
+                              cursor="pointer"
+                              fontSize="var(--icon-fontSize-md)"
+                              onClick={(): void => {
+                                setShowConfirmPassword(true);
+                              }}
+                            />
+                          )
+                        }
+                        label="Confirm password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                      />
+                      {errors.confirmPassword ? <FormHelperText>{errors.confirmPassword.message}</FormHelperText> : null}
+                    </FormControl>
+                  )}
+                />
               </Grid>
             </Grid>
           </Stack>
