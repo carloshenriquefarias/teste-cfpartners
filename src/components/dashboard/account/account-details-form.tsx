@@ -1,49 +1,19 @@
 'use client';
 
 import * as React from 'react';
-import Button from '@mui/material/Button';
+
+import FormUser from './formUser';
+
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
-import Divider from '@mui/material/Divider';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import Select from '@mui/material/Select';
-import Grid from '@mui/material/Unstable_Grid2';
+import { Stack, Typography } from '@mui/material';
 
-import dayjs, { Dayjs } from 'dayjs';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-
-import { UploadSimple } from '@phosphor-icons/react/dist/ssr/UploadSimple';
-import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api } from '@/services/api';
 
-import { toastApiResponse } from '@/utils/Toast';
-import { ToastContainer } from "react-toastify";
 import "react-toastify/ReactToastify.min.css";  
 
-import { useRouter } from 'next/navigation';
-import { paths } from '@/paths';
-
-import { z as zod } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-
-import { Controller, useForm } from 'react-hook-form';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormHelperText from '@mui/material/FormHelperText';
-import FormUser from './formUser';
-import { Stack, Typography } from '@mui/material';
-import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { UserCircle } from '@phosphor-icons/react';
-
-
 interface User {
   id: string;
   firstname: string;
@@ -60,31 +30,11 @@ interface User {
 export function AccountDetailsForm({ userId }: any): React.JSX.Element {
 
   const [user, setUser] = useState<User>();
-  
-  
-  // const [dataUserToEdit, setDataUserToEdit] = useState<any>(
-  //   {
-  //     id: '1',
-  //     firstName: 'Jr',
-  //     lastName: 'Finn',
-  //     userName: 'Jr Finn',
-  //     email: 'jr.finn@devias.io',
-  //     phone: '415-907-2647',
-  //     birthDate: '2024-12-12',
-  //     // avatar: '/assets/avatar-9.png',
-  //     // address: { city: 'Carson City', country: 'USA', state: 'Nevada', street: '2188 Armbrester Drive' },
-  //     createdAt: dayjs().subtract(2, 'hours').toDate(),
-  //   },
-  // );
-
-  // const [value, setValue] = React.useState<Dayjs | null>(dayjs(dataUserToEdit.birthDate));
 
   const fetchAllUsers = async (userId: string) => {
     try {
-
       const response = await api.post('/crud_users/api/v2/users');
-      const allUsers = response.data?.data || [];
-  
+      const allUsers = response.data?.data || [];  
       const foundUser = allUsers.find((user: any) => user.id === userId);
   
       if (foundUser) {

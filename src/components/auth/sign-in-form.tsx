@@ -1,164 +1,128 @@
 'use client';
 
 import * as React from 'react';
-import RouterLink from 'next/link';
 import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
-import Alert from '@mui/material/Alert';
+import { useState } from 'react';
+
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
-import InputLabel from '@mui/material/InputLabel';
-import Link from '@mui/material/Link';
-import OutlinedInput from '@mui/material/OutlinedInput';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import { Grid } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
-import { EyeSlash as EyeSlashIcon } from '@phosphor-icons/react/dist/ssr/EyeSlash';
-import { Controller, useForm } from 'react-hook-form';
-import { z as zod } from 'zod';
-import Avatar from '@mui/material/Avatar';
-import Box from '@mui/material/Box';
 
-import { paths } from '@/paths';
-import { authClient } from '@/lib/auth/client';
-import { useUser } from '@/hooks/use-user';
+import { toast } from 'react-toastify';
+import { toastApiResponse } from '@/utils/Toast';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/ReactToastify.min.css";
+import 'react-toastify/dist/ReactToastify.css';
 
-const schema = zod.object({
-  email: zod.string().min(1, { message: 'Email is required' }).email(),
-  password: zod.string().min(1, { message: 'Password is required' }),
-});
+import { BookOpenText, PencilLine, Trash, UserPlus } from '@phosphor-icons/react';
 
-type Values = zod.infer<typeof schema>;
+export function LandingPage(): React.JSX.Element {
 
-const defaultValues = { email: 'sofia@devias.io', password: 'Secret1' } satisfies Values;
-
-export function SignInForm(): React.JSX.Element {
+  const iconColor = '#635BFF'
   const router = useRouter();
-
-  const { checkSession } = useUser();
-
-  const [showPassword, setShowPassword] = React.useState<boolean>();
-
-  const [isPending, setIsPending] = React.useState<boolean>(false);
-
-  const {
-    control,
-    handleSubmit,
-    setError,
-    formState: { errors },
-  } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
-
-  const onSubmit = React.useCallback(
-    async (values: Values): Promise<void> => {
-      setIsPending(true);
-
-      const { error } = await authClient.signInWithPassword(values);
-
-      if (error) {
-        setError('root', { type: 'server', message: error });
-        setIsPending(false);
-        return;
-      }
-
-      // Refresh the auth state
-      await checkSession?.();
-
-      // UserProvider, for this case, will not refresh the router
-      // After refresh, GuestGuard will handle the redirect
-      router.refresh();
+  const [isLoading, setIsLoading] = useState(false);
+  const integrations = [
+    {
+      id: '1',
+      title: 'Create',
+      description: 'Register a new user inside our base data e with your personal data.',
+      logo: <UserPlus size={45} color={iconColor} />
     },
-    [checkSession, router, setError]
-  );
+    {
+      id: '2',
+      title: 'List',
+      description: 'All users registered in this sistem are show up for the currently user.',
+      logo: <BookOpenText size={45} color={iconColor} />,
+    },
+    {
+      id: '3',
+      title: 'Edit',
+      description: 'If you are not satisfected, you can change data and do new uptades.',
+      logo: <PencilLine size={45} color={iconColor} />
+    },
+    {
+      id: '4',
+      title: 'Delete',
+      description: 'Are you not satisfected? Do not worry, you can delete you user.',
+      logo: <Trash size={45} color={iconColor} />
+    },
+  ];
+
+  const handleClickListUsers = async () => {
+    setIsLoading(true);
+    toastApiResponse(null, 'Welcome to CRUD Test CF Partners! We hope you enjoy it a lot! Good luck!');
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    router.push(`/dashboard/customers`);
+    setIsLoading(false);
+  };
 
   return (
-    <Stack spacing={4}>
-
-      <Stack spacing={1}>
-        <Typography variant="h4">Sign in</Typography>      
-      </Stack>
-
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack spacing={4}>
-          <Controller
-            control={control}
-            name="email"
-            render={({ field }) => (
-              <FormControl error={Boolean(errors.email)}>
-                <InputLabel>Email address</InputLabel>
-                <OutlinedInput {...field} label="Email address" type="email" />
-                {errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
-              </FormControl>
-            )}
-          />
-
-          <Controller
-            control={control}
-            name="password"
-            render={({ field }) => (
-              <FormControl error={Boolean(errors.password)}>
-                <InputLabel>Password</InputLabel>
-                <OutlinedInput
-                  {...field}
-                  endAdornment={
-                    showPassword ? (
-                      <EyeIcon
-                        cursor="pointer"
-                        fontSize="var(--icon-fontSize-md)"
-                        onClick={(): void => {
-                          setShowPassword(false);
-                        }}
-                      />
-                    ) : (
-                      <EyeSlashIcon
-                        cursor="pointer"
-                        fontSize="var(--icon-fontSize-md)"
-                        onClick={(): void => {
-                          setShowPassword(true);
-                        }}
-                      />
-                    )
-                  }
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                />
-                {errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
-              </FormControl>
-            )}
-          />
-          
-          {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-          <Button disabled={isPending} type="submit" variant="contained">
-            Sign in
-          </Button>
-        </Stack>
-      </form>
-
-      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography color="text.secondary" variant="body2" mt={0}>
-          Don&apos;t have an account?{' '}
-          <Link component={RouterLink} href={paths.auth.signUp} underline="hover" variant="subtitle2">
-            Sign up
-          </Link>
+    <Stack spacing={2}>
+      <Stack spacing={1} direction={'column'}>
+        <Typography color="inherit" sx={{ textAlign: 'center' }} variant="h4">
+          Welcome to project test  {' '}
+          <Box component="span" sx={{ color: '#635BFF' }}>
+            CRUD from CF Partenrs
+          </Box>
         </Typography>
 
-        <div>
-          <Link component={RouterLink} href={paths.auth.resetPassword} variant="subtitle2">
-            Forgot password?
-          </Link>
-        </div>
-      </Stack>
-      
-      {/* <Alert color="warning">
-        Use{' '}
-        <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
-          sofia@devias.io
-        </Typography>{' '}
-        with password{' '}
-        <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
-          Secret1
+        <Typography variant="h6" sx={{ mt: 2, lineHeight: '1.5em', textAlign: 'center' }}>
+          This project is about a create, read, update, delete users for
+          application for managing user details and credentials
         </Typography>
-      </Alert> */}
+      </Stack>
+
+      <Grid container spacing={2}>
+        {integrations.map((integration, index) => (
+          <Grid key={index} item lg={6} md={6} xs={12}>
+            <Card
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                transition: "all 0.25s",
+                transitionTimingFunction: "spring(1 100 10 10)",
+                '&:hover': { transform: 'translateY(-5px)' }
+              }
+              }>
+              <CardContent sx={{ flex: '1 1 auto' }}>
+                <Stack spacing={1}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Stack>
+                      {integration.logo}
+                    </Stack>
+                  </Box>
+                  <Stack spacing={1}>
+                    <Typography align="center" variant="h5">
+                      {integration.title}
+                    </Typography>
+                    <Typography align="center" variant="body1">
+                      {integration.description}
+                    </Typography>
+                  </Stack>
+                </Stack>
+              </CardContent>
+              <Divider />
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      <Button variant="contained" color="primary" onClick={handleClickListUsers}>
+        {isLoading ? (
+          <CircularProgress size={14} color="inherit" />
+        ) : (
+          'Know the project'
+        )}
+      </Button>
+
+      <ToastContainer />
     </Stack>
   );
 }

@@ -15,6 +15,9 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
+import dayjs from 'dayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
@@ -22,13 +25,6 @@ import { z as zod } from 'zod';
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
-
-import dayjs from 'dayjs';
-// import { Dayjs } from 'dayjs';
-// import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-// import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 import { useState } from 'react';
 import { api } from '@/services/api';
@@ -42,7 +38,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ArrowFatLineLeft, ClipboardText, IdentificationCard} from '@phosphor-icons/react';
 import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 import { EyeSlash as EyeSlashIcon } from '@phosphor-icons/react/dist/ssr/EyeSlash';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 const schema = zod.object({
   firstName: zod.string().min(1, { message: 'Firstname is required' }),
@@ -115,7 +110,7 @@ export function SignUpForm(): React.JSX.Element {
   };
 
   const convertDate = (dateString: string): string => {
-    const [month, day, year] = dateString.split('/');
+    const [day, month, year] = dateString.split('/');
     const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     return formattedDate;
   };
@@ -128,8 +123,6 @@ export function SignUpForm(): React.JSX.Element {
   const onSubmit = React.useCallback(
     async (values: Values): Promise<void> => {
       setIsLoading(true);
-      
-      // console.log('values 11:08 => ',values)
   
       if (values.password !== values.confirmPassword) {
         handleApiError();
@@ -138,7 +131,6 @@ export function SignUpForm(): React.JSX.Element {
       }
 
       const convertedDate = convertDate(values.birthDate);
-      // console.log('convertedDate 18:48 =>', convertedDate);
   
       if (values.password === values.confirmPassword) {
         try {
@@ -286,9 +278,6 @@ export function SignUpForm(): React.JSX.Element {
                     type='tel'
                     value={formatPhoneNumber(field.value)}
                     onChange={(e) => {
-                      // const formattedValue = formatPhoneNumber(e.target.value);
-                      // field.onChange(e.target.value); // Set raw value to form state
-                      // field.onBlur(); // Mark field as blurred to trigger validation
                       const cleanedValue = e.target.value.replace(/\D/g, '');
                       field.onChange(cleanedValue);
                     }}
@@ -324,15 +313,6 @@ export function SignUpForm(): React.JSX.Element {
                     const formattedValue = newValue ? dayjs(newValue).format('DD/MM/YYYY') : '';
                     field.onChange(formattedValue);
                   }}
-                  // renderInput={(params: any) => (
-                  //   <TextField
-                  //     {...params}
-                  //     variant="outlined"
-                  //     fullWidth
-                  //     error={Boolean(errors.birthDate)}
-                  //   />
-                  // )}
-                  // inputFormat="DD/MM/YYYY"
                 />
               )}
             />

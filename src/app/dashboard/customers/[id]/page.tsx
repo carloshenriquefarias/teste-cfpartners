@@ -5,13 +5,11 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { config } from '@/config';
 import { AccountDetailsForm } from '@/components/dashboard/account/account-details-form';
 
-export const metadata = { title: `Account | Dashboard | ${config.site.name}` } satisfies Metadata;
+export const metadata = { title: `Edit profile` } satisfies Metadata;
 
 export default function Page( {params} : {params : {id: string}}): React.JSX.Element {
-
   return (
     <Stack spacing={3}>
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
