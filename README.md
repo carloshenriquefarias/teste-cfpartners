@@ -131,13 +131,13 @@ Next.js is a popular React framework for building web applications. It is design
 ### Web
 
 <p align="center" style="display: flex; align-items: flex-start; justify-content: center;">
-  <img alt="LandingPage" title="#LandingPage" src="./assets/LandingPage.png" width="400" >
+  <img alt="LandingPage" title="#LandingPage" src="./public/assets/LandingPage.png" width="400" >
   <br>
-  <img alt="ListUsers" title="#ListUsers" src="./assets/ListUsers.png" width="400" >
+  <img alt="ListUsers" title="#ListUsers" src="./public/assets/ListUsers.png" width="400" >
   <br>
-  <img alt="RegisterUser" title="#RegisterUser" src="./assets/RegisterUser.png" width="400" >
+  <img alt="RegisterUser" title="#RegisterUser" src="./public/assets/RegisterUser.png" width="400" >
    <br>
-  <img alt="EditUser" title="#EditUser" src="./assets/EditUser.png" width="400" >
+  <img alt="EditUser" title="#EditUser" src="./public/assets/EditUser.png" width="400" >
 </p>
 
 

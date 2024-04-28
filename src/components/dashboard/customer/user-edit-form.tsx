@@ -54,21 +54,17 @@ const schema = zod.object({
   mobile: zod.string()
     .min(1, { message: 'Mobile is required' })
     .regex(/^\d+$/, { message: 'Mobile must contain only digits' }),
-  password: zod.string().min(6, { message: 'Password should be at least 6 characters' }).optional(),
-  confirmPassword: zod.string().min(6, { message: 'Confirm password should be the same password' }).optional(),
+  password: zod.string().optional(),
+  confirmPassword: zod.string().optional(),
 });
 
 type FormValues = zod.infer<typeof schema>;
 
-export default function FormUser({ user }: any) {
+export default function UserEditForm({ user }: any) {
 
   const router = useRouter();
-
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = React.useState<boolean>();
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = React.useState<boolean>();  
   const [showConfirmPassword, setShowConfirmPassword] = React.useState<boolean>();
-
   const [formattedMobile, setFormattedMobile] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -121,24 +117,27 @@ export default function FormUser({ user }: any) {
 
   const onSubmit = React.useCallback(
     async (values: any): Promise<void> => {
-      setIsLoading(true);
-
-      if (values.password !== values.confirmPassword) {
-        handleApiError();
-        setIsLoading(false);
-        return;
-      }
-
       try {
+        setIsLoading(true);
+
+        if (values.password !== values.confirmPassword) {
+          handleApiError();
+          setIsLoading(false);
+          return;
+        }
+        
         const formData = new FormData();
         formData.append("firstname", values.firstname);
         formData.append("lastname", values.lastname);
         formData.append("email", values.email);
         formData.append("mobile", values.mobile);
         formData.append("username", values.username);
-        formData.append("dateofbirth", values.birthDate);
-        formData.append("password", values.password);
+        formData.append("dateofbirth", values.birthDate);        
         formData.append("id", user.id);
+
+        if (values.password) {
+          formData.append("password", values.password);
+        }
 
         const editUserEndpoint = '/crud_users/api/v2/user/update';
         const response = await api.post(editUserEndpoint, formData, {
@@ -152,7 +151,7 @@ export default function FormUser({ user }: any) {
         }
 
         await new Promise(resolve => setTimeout(resolve, 3000));
-        router.push(paths.dashboard.customers);
+        router.push(paths.dashboard.customers.list);
         setIsLoading(false);
 
       } catch (error) {
@@ -165,7 +164,7 @@ export default function FormUser({ user }: any) {
   );
 
   const handleGoToListUsers = () => {
-    router.push(paths.dashboard.customers);
+    router.push(paths.dashboard.customers.list);
   };
 
   useEffect(() => {

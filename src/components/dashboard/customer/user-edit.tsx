@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import FormUser from './formUser';
+import UserEditForm from './user-edit-form';
 
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -27,7 +27,7 @@ interface User {
   deleted_at: string | null;
 }
 
-export function AccountDetailsForm({ userId }: any): React.JSX.Element {
+export function UserEdit({ userId }: any): React.JSX.Element {
 
   const [user, setUser] = useState<User>();
 
@@ -68,7 +68,7 @@ export function AccountDetailsForm({ userId }: any): React.JSX.Element {
 
       <Card>
         <CardContent>
-          {user && <FormUser user={user} />}
+          {user && <UserEditForm user={user} />}
         </CardContent>
       </Card>
     </>
