@@ -21,15 +21,21 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
       id: '1',
       title: 'GitHub',
       description: 'To know a little more about my skill, click on button below',
+      route: 'https://github.com/carloshenriquefarias', 
       logo: <Avatar src={'https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png'} variant="square" />,
     },
     {
       id: '2',
       title: 'LinkedIn',
       description: 'If you want to know about my job, click on button below',
+      route: 'https://www.linkedin.com/in/carlos-farias-junior-296562235/', 
       logo: <Avatar src={'https://static.vecteezy.com/ti/vetor-gratis/p3/3692704-linkedin-american-business-logo-social-media-icon-black-pictogram-vector-illustration-isolated-on-white-backgroud-gratis-vetor.jpg'} variant="square" />,
     },
   ];
+
+  const handleButtonClick = (route: string) => {
+    // window.open(route, '_blank');
+  };
 
   return (
     <Box
@@ -127,7 +133,7 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
                               {item.description}
                             </Typography>
                           </Stack>
-                          <Button fullWidth variant="contained">
+                          <Button variant="contained" component="a" href={item.route} target="_blank">
                             My profile
                           </Button>
                         </Stack>
@@ -139,7 +145,7 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
 
               <Stack spacing={1} mt={3} sx={{ textAlign: 'center' }}>
                 <Typography color="text.secondary" variant="body2">
-                  {'Brazil, Rondonia, Jaci Paraná, 2024'}
+                  Brazil, Rondonia, Jaci Paraná, 2024
                 </Typography>
               </Stack>   
 
