@@ -68,7 +68,7 @@ export function LandingPage(): React.JSX.Element {
         <Typography color="inherit" sx={{ textAlign: 'center' }} variant="h4">
           Welcome to project test  {' '}
           <Box component="span" sx={{ color: '#635BFF' }}>
-            CRUD from CF Partenrs
+            CRUD from CF Partners
           </Box>
         </Typography>
 
@@ -78,7 +78,7 @@ export function LandingPage(): React.JSX.Element {
         </Typography>
       </Stack>
 
-      <Grid container spacing={2}>
+      <Grid container spacing={2} mb={2}>
         {integrations.map((integration, index) => (
           <Grid key={index} item lg={6} md={6} xs={12}>
             <Card

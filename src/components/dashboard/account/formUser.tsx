@@ -151,7 +151,7 @@ export default function FormUser({ user }: any) {
           toastApiResponse(response, response.data.message);
         }
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 3000));
         router.push(paths.dashboard.customers);
         setIsLoading(false);
 
