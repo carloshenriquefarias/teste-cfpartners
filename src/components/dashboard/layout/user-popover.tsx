@@ -21,7 +21,7 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
   const router = useRouter();
 
   const handleSignOut = () => {
-    router.push(`/auth/sign-in`);
+    router.push(`/landing-page/`);
   };
 
   return (

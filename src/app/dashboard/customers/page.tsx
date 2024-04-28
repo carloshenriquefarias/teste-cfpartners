@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 
 import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
-import { CustomersTable } from '@/components/dashboard/customer/customers-table';
+import { UsersListTable } from '@/components/dashboard/customer/users-list-table';
 import { paths } from '@/paths';
 
 export const metadata = { title: `List users` } satisfies Metadata;
@@ -39,7 +39,7 @@ export default function Page(): React.JSX.Element {
               startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
               variant="contained"
               color="primary"  
-              href={paths.dashboard.settings}      
+              href={paths.dashboard.customers.create}      
             >
               Register user
             </Button>
@@ -47,7 +47,7 @@ export default function Page(): React.JSX.Element {
         </CardActions>
       </Stack>
 
-      <CustomersTable/>
+      <UsersListTable/>
     </Stack>
   );
 }

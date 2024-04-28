@@ -70,7 +70,7 @@ const defaultValues = {
   confirmPassword: '',
 } satisfies Values;
 
-export function SignUpForm(): React.JSX.Element {
+export function UserCreateForm(): React.JSX.Element {
   const router = useRouter();
 
   const { checkSession } = useUser();
@@ -167,7 +167,7 @@ export function SignUpForm(): React.JSX.Element {
   
           setIsLoading(false);  
           await checkSession?.();
-          router.push(paths.dashboard.customers);
+          router.push(paths.dashboard.customers.list);
 
         } catch (error) {
           console.error('Error:', error);
@@ -180,7 +180,7 @@ export function SignUpForm(): React.JSX.Element {
   );
   
   const handleGoToListUsers = () => {
-    router.push(paths.dashboard.customers);
+    router.push(paths.dashboard.customers.list);
   };
 
   return (

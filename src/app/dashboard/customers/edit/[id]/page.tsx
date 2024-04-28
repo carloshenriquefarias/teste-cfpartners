@@ -5,7 +5,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { AccountDetailsForm } from '@/components/dashboard/account/account-details-form';
+import { UserEdit } from '@/components/dashboard/customer/user-edit';
 
 export const metadata = { title: `Edit profile` } satisfies Metadata;
 
@@ -18,7 +18,7 @@ export default function Page( {params} : {params : {id: string}}): React.JSX.Ele
 
       <Grid container spacing={3}>
         <Grid lg={12} md={12} xs={12}>
-          <AccountDetailsForm userId={params.id}/>
+          <UserEdit userId={params.id}/>
         </Grid>
       </Grid>
     </Stack>

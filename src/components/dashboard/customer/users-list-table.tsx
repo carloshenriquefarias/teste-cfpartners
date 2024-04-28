@@ -39,7 +39,7 @@ export interface Users {
   password: string;
 }
 
-export function CustomersTable() {
+export function UsersListTable() {
 
   const router = useRouter();
 
@@ -66,7 +66,7 @@ export function CustomersTable() {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
     setIsLoading(false);
-    router.push(`/dashboard/customers/${userId}`);
+    router.push(`/dashboard/customers/edit/${userId}`);
   };
 
   const handleCloseModal = () => {

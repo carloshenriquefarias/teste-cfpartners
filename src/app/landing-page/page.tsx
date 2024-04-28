@@ -1,8 +1,8 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
 
-import { Layout } from '@/components/auth/layout';
-import { LandingPage } from '@/components/auth/sign-in-form';
+import { Layout } from '@/components/landing-page/layout';
+import { LandingPage } from '@/components/landing-page/page';
 
 export const metadata = { title: `Landing page` } satisfies Metadata;
 
