@@ -69,7 +69,7 @@ export default function UserEditForm({ user }: any) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleApiError = () => {
-    const title = 'Your password is incorrect. Please try again';
+    const title = 'Your two passwords are not the same. Please try again';
     toast.error(title, {
       position: "top-center",
       autoClose: 5000,

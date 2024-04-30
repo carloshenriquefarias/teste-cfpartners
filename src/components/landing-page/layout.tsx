@@ -33,10 +33,6 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
     },
   ];
 
-  const handleButtonClick = (route: string) => {
-    // window.open(route, '_blank');
-  };
-
   return (
     <Box
       sx={{
