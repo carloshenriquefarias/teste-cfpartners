@@ -31,7 +31,7 @@ export function LandingPage(): React.JSX.Element {
     {
       id: '1',
       title: 'Create',
-      description: 'Register a new user inside our base data e with your personal data.',
+      description: 'Register a new user inside our database with your personal data.',
       logo: <UserPlus size={45} color={iconColor} />
     },
     {
@@ -49,7 +49,7 @@ export function LandingPage(): React.JSX.Element {
     {
       id: '4',
       title: 'Delete',
-      description: 'Are you not satisfected? Do not worry, you can delete you user.',
+      description: 'Are you not satisfected? Do not worry, you can delete your user.',
       logo: <Trash size={45} color={iconColor} />
     },
   ];
@@ -57,7 +57,7 @@ export function LandingPage(): React.JSX.Element {
   const handleClickListUsers = async () => {
     setIsLoading(true);
     toastApiResponse(null, 'Welcome to CRUD Test CF Partners! We hope you enjoy it a lot! Good luck!');
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 3000));
     router.push(`/dashboard/customers`);
     setIsLoading(false);
   };
