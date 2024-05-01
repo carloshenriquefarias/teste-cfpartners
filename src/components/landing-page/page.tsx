@@ -14,7 +14,6 @@ import { Grid } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { toast } from 'react-toastify';
 import { toastApiResponse } from '@/utils/Toast';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/ReactToastify.min.css";

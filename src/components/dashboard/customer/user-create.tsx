@@ -154,7 +154,7 @@ export function UserCreateForm(): React.JSX.Element {
             toastApiResponse(response, response.data.message);
           }
 
-          await new Promise(resolve => setTimeout(() => {resolve(2000)}));
+          await new Promise(resolve => setTimeout(resolve, 3000));
           setIsPending(true);
   
           const { error } = await authClient.signUp(values);

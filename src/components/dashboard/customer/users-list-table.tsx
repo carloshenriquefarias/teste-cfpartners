@@ -43,7 +43,6 @@ export function UsersListTable() {
   const router = useRouter();
 
   const [open, setOpen] = React.useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [users, setUsers] = useState<Users[]>([]);
   const [rechargeListUsers, setRechargeListUsers] = useState(false);
@@ -62,9 +61,7 @@ export function UsersListTable() {
   }
 
   const handleClickEditUser = async (userId: string) => {
-    setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsLoading(false);
     router.push(`/dashboard/customers/edit/${userId}`);
   };
 
@@ -75,11 +72,9 @@ export function UsersListTable() {
 
   const fetchAllUsers = async () => {
     try {
-      setIsLoading(true);
       const response = await api.post('/crud_users/api/v2/users');
       const newsResponse = response.data;
       setUsers(newsResponse?.data)
-      setIsLoading(false);
 
     } catch (error) {
       console.error('Error:', error);
@@ -113,7 +108,7 @@ export function UsersListTable() {
     }
   };
 
-  const formatPhoneNumber = (value: any) => {
+  const formatPhoneNumber = (value: string) => {
     const cleaned = value.replace(/\D/g, '');
     let formattedValue = '';
     if (cleaned.length > 0) {
@@ -185,7 +180,7 @@ export function UsersListTable() {
                     <Button
                       startIcon={<Trash fontSize="var(--icon-fontSize-md)" />}
                       variant="contained"
-                      onClick={() => handleOpenModal(user.id)}
+                      onClick={() => { handleOpenModal(user.id) }}
                       sx={{ backgroundColor: '#ff6961', color: 'white', '&:hover': { backgroundColor: 'darkred' } }}
                     >
                       Delete
