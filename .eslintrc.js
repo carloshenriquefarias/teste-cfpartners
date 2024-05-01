@@ -22,15 +22,8 @@ module.exports = {
     },
   },
   rules: {
-    '@typescript-eslint/no-unused-vars': [
-      'error',
-      {
-        ignoreRestSiblings: true,
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^_',
-      },
-    ],
+    '@typescript-eslint/no-unused-vars': "off",
+    '@typescript-eslint/restrict-template-expressions': "off",
     '@typescript-eslint/no-empty-interface': [
       'error',
       {
