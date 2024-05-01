@@ -28,7 +28,8 @@ interface User {
   deleted_at: string | null;
 }
 
-export function UserEdit({ userId }: any): React.JSX.Element {
+// export function UserEdit({ userId }: any): React.JSX.Element {
+export function UserEdit({ userId: editedUserId }: any): React.JSX.Element {
 
   const [user, setUser] = useState<User>();
 
@@ -48,8 +49,8 @@ export function UserEdit({ userId }: any): React.JSX.Element {
   };
 
   useEffect(() => {    
-    fetchAllUsers(userId)
-  }, [userId])
+    fetchAllUsers(editedUserId)
+  }, [editedUserId])
 
   return (
     <>

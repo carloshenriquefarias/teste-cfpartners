@@ -34,16 +34,6 @@ import { ArrowFatLineLeft, FileText, PencilLine } from '@phosphor-icons/react';
 import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 import { EyeSlash as EyeSlashIcon } from '@phosphor-icons/react/dist/ssr/EyeSlash';
 import { UploadSimple } from '@phosphor-icons/react/dist/ssr/UploadSimple';
-interface User {
-  id: string;
-  firstname: string;
-  lastname: string;
-  username: string;
-  email: string;
-  mobile: string;
-  birthDate: string;
-  password: string;
-}
 
 const schema = zod.object({
   firstname: zod.string().min(1, { message: 'First name is required' }),
@@ -82,7 +72,7 @@ export default function UserEditForm({ user }: any) {
     });
   };
 
-  const formatPhoneNumber = (value: any) => {
+  const formatPhoneNumber = (value: string) => {
     const cleaned = value.replace(/\D/g, '');
     let formattedValue = '';
     if (cleaned.length > 0) {
@@ -445,7 +435,7 @@ export default function UserEditForm({ user }: any) {
 
         <CardActions sx={{ justifyContent: 'flex-end' }}>
           <Button
-            startIcon={isLoading == false && <UploadSimple fontSize="var(--icon-fontSize-md)" />}
+            startIcon={isLoading === false && <UploadSimple fontSize="var(--icon-fontSize-md)" />}
             variant="contained"
             color="primary"
             type="submit"
