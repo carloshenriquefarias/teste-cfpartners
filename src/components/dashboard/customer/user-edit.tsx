@@ -37,7 +37,7 @@ export function UserEdit({ userId: editedUserId }: any): React.JSX.Element {
     try {
       const response = await api.post('/crud_users/api/v2/users');
       const allUsers = response.data?.data || [];  
-      const foundUser = allUsers.find((user: any) => user.id === userId);
+      const foundUser = allUsers.find((currentlyUser: any) => currentlyUser.id === userId);
   
       if (foundUser) {
         setUser(foundUser);
