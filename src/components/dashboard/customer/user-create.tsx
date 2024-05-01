@@ -35,7 +35,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/ReactToastify.min.css";
 import 'react-toastify/dist/ReactToastify.css';
 
-import { ArrowFatLineLeft, ClipboardText, IdentificationCard} from '@phosphor-icons/react';
+import { ArrowFatLineLeft, ClipboardText, IdentificationCard } from '@phosphor-icons/react';
 import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 import { EyeSlash as EyeSlashIcon } from '@phosphor-icons/react/dist/ssr/EyeSlash';
 
@@ -46,7 +46,7 @@ const schema = zod.object({
   email: zod.string().min(1, { message: 'Email is required' }).email(),
   birthDate: zod.string().refine((value) => {
     const dateFormatRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-    if (!dateFormatRegex.test(value)) {return false}
+    if (!dateFormatRegex.test(value)) { return false }
     const [day, month, year] = value.split('/');
     return dayjs(`${year}-${month}-${day}`, 'YYYY-MM-DD').isValid();
   }, 'Birth date is required'),
@@ -64,7 +64,7 @@ const defaultValues = {
   lastName: '',
   userName: '',
   email: '',
-  birthDate: '', 
+  birthDate: '',
   mobile: '',
   password: '',
   confirmPassword: '',
@@ -115,7 +115,7 @@ export function UserCreateForm(): React.JSX.Element {
     return formattedDate;
   };
 
-  const { control, handleSubmit,setError, formState: { errors } } = useForm<Values>({
+  const { control, handleSubmit, setError, formState: { errors } } = useForm<Values>({
     defaultValues,
     resolver: zodResolver(schema)
   });
@@ -123,7 +123,7 @@ export function UserCreateForm(): React.JSX.Element {
   const onSubmit = React.useCallback(
     async (values: Values): Promise<void> => {
       setIsLoading(true);
-  
+
       if (values.password !== values.confirmPassword) {
         handleApiError();
         setIsLoading(false);
@@ -131,7 +131,7 @@ export function UserCreateForm(): React.JSX.Element {
       }
 
       const convertedDate = convertDate(values.birthDate);
-  
+
       if (values.password === values.confirmPassword) {
         try {
           const formData = new FormData();
@@ -142,30 +142,30 @@ export function UserCreateForm(): React.JSX.Element {
           formData.append("mobile", values.mobile);
           formData.append("dateofbirth", convertedDate);
           formData.append("password", values.password);
-  
+
           const registerNewUserEndpoint = '/crud_users/api/v2/user/create';
           const response = await api.post(registerNewUserEndpoint, formData, {
             headers: {
               'Content-Type': 'multipart/form-data'
             }
           });
-  
+
           if (response.data.status) {
             toastApiResponse(response, response.data.message);
           }
 
           await new Promise(resolve => setTimeout(resolve, 3000));
           setIsPending(true);
-  
+
           const { error } = await authClient.signUp(values);
-  
+
           if (error) {
             setError('root', { type: 'server', message: error });
             setIsPending(false);
             return;
           }
-  
-          setIsLoading(false);  
+
+          setIsLoading(false);
           await checkSession?.();
           router.push(paths.dashboard.customers.list);
 
@@ -178,7 +178,7 @@ export function UserCreateForm(): React.JSX.Element {
     },
     [checkSession, router, setError]
   );
-  
+
   const handleGoToListUsers = () => {
     router.push(paths.dashboard.customers.list);
   };
@@ -265,29 +265,29 @@ export function UserCreateForm(): React.JSX.Element {
           />
 
           <Controller
-              name="mobile"
-              control={control}
-              defaultValue=""
-              render={({ field }) => (
-                <FormControl error={Boolean(errors.mobile)}>
-                  <InputLabel htmlFor="mobile">Mobile</InputLabel>
-                  <OutlinedInput
-                    {...field}
-                    id="mobile"
-                    label="Mobile"
-                    type='tel'
-                    value={formatPhoneNumber(field.value)}
-                    onChange={(e) => {
-                      const cleanedValue = e.target.value.replace(/\D/g, '');
-                      field.onChange(cleanedValue);
-                    }}
-                  />
-                  {errors.mobile && (
-                    <FormHelperText>{errors.mobile.message}</FormHelperText>
-                  )}
-                </FormControl>
-              )}
-            />
+            name="mobile"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <FormControl error={Boolean(errors.mobile)}>
+                <InputLabel htmlFor="mobile">Mobile</InputLabel>
+                <OutlinedInput
+                  {...field}
+                  id="mobile"
+                  label="Mobile"
+                  type='tel'
+                  value={formatPhoneNumber(field.value)}
+                  onChange={(e) => {
+                    const cleanedValue = e.target.value.replace(/\D/g, '');
+                    field.onChange(cleanedValue);
+                  }}
+                />
+                {errors.mobile && (
+                  <FormHelperText>{errors.mobile.message}</FormHelperText>
+                )}
+              </FormControl>
+            )}
+          />
 
           <FormControl fullWidth error={Boolean(errors.birthDate)}>
             <Controller
@@ -313,6 +313,7 @@ export function UserCreateForm(): React.JSX.Element {
                     const formattedValue = newValue ? dayjs(newValue).format('DD/MM/YYYY') : '';
                     field.onChange(formattedValue);
                   }}
+                  format="DD/MM/YYYY"
                 />
               )}
             />
