@@ -10,6 +10,7 @@ import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
 
 import { SignOut as SignOutIcon } from '@phosphor-icons/react/dist/ssr/SignOut';
+
 export interface UserPopoverProps {
   anchorEl: Element | null;
   onClose: () => void;
