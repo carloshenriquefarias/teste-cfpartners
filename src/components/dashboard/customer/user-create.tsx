@@ -9,7 +9,7 @@ import CardHeader from '@mui/material/CardHeader';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
-import { Grid, TextField } from '@mui/material';
+import { Grid } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
@@ -94,7 +94,7 @@ export function UserCreateForm(): React.JSX.Element {
     });
   };
 
-  const formatPhoneNumber = (value: any) => {
+  const formatPhoneNumber = (value: string) => {
     const cleaned = value.replace(/\D/g, '');
     let formattedValue = '';
     if (cleaned.length > 0) {
@@ -153,8 +153,8 @@ export function UserCreateForm(): React.JSX.Element {
           if (response.data.status) {
             toastApiResponse(response, response.data.message);
           }
-  
-          await new Promise(resolve => setTimeout(resolve, 2000));
+
+          await new Promise(resolve => setTimeout(() => {resolve(2000)}));
           setIsPending(true);
   
           const { error } = await authClient.signUp(values);
@@ -401,7 +401,7 @@ export function UserCreateForm(): React.JSX.Element {
 
           <CardActions sx={{ justifyContent: 'flex-end' }}>
             <Button
-              startIcon={isLoading == false && <ClipboardText fontSize="var(--icon-fontSize-md)" />}
+              startIcon={isLoading === false && <ClipboardText fontSize="var(--icon-fontSize-md)" />}
               variant="contained"
               type="submit"
               color="primary"

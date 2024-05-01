@@ -23,6 +23,8 @@ module.exports = {
   },
   rules: {
     "no-unused-vars": "off",
+    "no-console": "off",
+    "no-promise-executor-return": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unsafe-assignment": "off",
     "@typescript-eslint/no-unsafe-call": "off",
@@ -34,6 +36,8 @@ module.exports = {
     "@typescript-eslint/use-unknown-in-catch-callback-variable": "off",
     "@typescript-eslint/prefer-optional-chain": "off",
     "@typescript-eslint/prefer-promise-reject-errors": "off",
+    "@typescript-eslint/no-floating-promises": "off",
+    "@typescript-eslint/no-confusing-void-expression": "off",
     '@typescript-eslint/restrict-template-expressions': "off",
     '@typescript-eslint/no-empty-interface': [
       'error',

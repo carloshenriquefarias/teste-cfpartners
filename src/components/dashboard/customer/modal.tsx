@@ -6,25 +6,13 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-import Snackbar from "@mui/material/Snackbar";
-import Alert from '@mui/material/Alert';
-import { useState } from 'react';
+interface ModalProps {
+  open: boolean;
+  handleClose: () => void;
+  handleDeleteUserById: () => void;
+}
 
-export default function Modal({ open, handleClose, handleDeleteUserById } : any) {
-  const [openSnack, setOpenSnack] = useState(false);
-
-  const handleClickSnack = () => {
-    setOpenSnack(true);
-  };
-
-  const handleCloseSnack = (event?: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
-    setOpenSnack(false);
-  };
-
+export default function Modal({ open, handleClose, handleDeleteUserById } : ModalProps) {
   return (
     <React.Fragment>
       <Dialog
@@ -46,21 +34,10 @@ export default function Modal({ open, handleClose, handleDeleteUserById } : any)
 
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleDeleteUserById} autoFocus>
+          <Button onClick={handleDeleteUserById}>
             Delete
           </Button>
         </DialogActions>
-
-        <Snackbar open={openSnack} autoHideDuration={3000} onClose={handleCloseSnack}>
-          <Alert
-            onClose={handleCloseSnack}
-            severity="success"
-            variant="filled"
-            sx={{ width: '100%'}}
-          >
-            User deleted successfully!
-          </Alert>
-        </Snackbar>
       </Dialog>
     </React.Fragment>
   );

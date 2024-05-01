@@ -14,6 +14,7 @@ import { api } from '@/services/api';
 import "react-toastify/ReactToastify.min.css";  
 
 import { UserCircle } from '@phosphor-icons/react';
+
 interface User {
   id: string;
   firstname: string;
