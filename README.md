@@ -41,8 +41,6 @@ Next.js is a popular React framework for building web applications. It is design
 ### Web
 
 <p align="center" style="display: flex; align-items: flex-start; justify-content: center;">
-  <img alt="LandingPage" title="#LandingPage" src="./public/assets/LandingPage.png" width="1200" >
-  <br>
   <img alt="ListUsers" title="#ListUsers" src="./public/assets/ListUsers.png" width="1000" >
   <br>
   <img alt="RegisterUser" title="#RegisterUser" src="./public/assets/RegisterUser.png" width="1000" >
@@ -76,6 +74,9 @@ $ npm install or yarn install
 $ npm run dev or yarn dev
 
 The application will open on port:3000 - access http://localhost:3000
+
+To set up the application go to folder SERVICES, the file api.ts you can use to set up your API - Ex: http://localhost:8080
+
 ```
 
 ### Access
